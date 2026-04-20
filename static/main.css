@@ -1,0 +1,18 @@
+:root {
+    --base-color: #1f2a44;
+    --base-color-hover: #182136;
+}
+
+body {
+    color: var(--base-color);
+}
+
+.navbar-brand,
+.nav-link {
+    color: var(--base-color);
+}
+
+.nav-link:hover,
+.nav-link:focus {
+    color: var(--base-color-hover);
+}
