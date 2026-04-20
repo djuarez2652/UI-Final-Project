@@ -283,6 +283,82 @@
     transition: none;
 }
 
+.stove-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    background-image: url("imgs/backgrounds/default-stove-bg.png");
+    background-size: cover;
+    background-position: center;
+    image-rendering: pixelated;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.stove-stage .pan {
+    position: absolute;
+    image-rendering: pixelated;
+    pointer-events: none;
+    width: 36%;
+    height: auto;
+    left: 32%;
+    top: 48%;
+    z-index: 1;
+}
+
+.stove-stage .pan.heating {
+    animation: chop-shake 0.22s steps(2) infinite;
+}
+
+.stove-stage .oil-bottle {
+    position: absolute;
+    left: 6%;
+    top: 8%;
+    width: 16%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 2;
+    transform-origin: center center;
+}
+
+.stove-stage .oil-bottle[data-state="pouring"] {
+    width: 22%;
+}
+
+.stove-stage .oil-bottle.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+#heat-progress {
+    position: absolute;
+    left: 36%;
+    top: 34%;
+    width: 28%;
+    height: 0.75rem;
+    background-color: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 3;
+}
+
+#heat-progress.visible {
+    display: block;
+}
+
+#heat-progress .bar {
+    width: 0%;
+    height: 100%;
+    background-color: #2d8f47;
+    transition: none;
+}
+
 .lesson-checkbox:disabled {
     cursor: not-allowed;
     opacity: 0.7;

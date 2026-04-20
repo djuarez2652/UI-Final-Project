@@ -87,6 +87,18 @@
         );
     }
 
+    function buildStoveStage() {
+        return (
+            '<div id="stove-stage" class="stove-stage">' +
+            '<img class="pan" data-state="empty" alt="wok" src="' +
+            SPRITES + 'plain-pan.png">' +
+            '<div id="heat-progress"><div class="bar"></div></div>' +
+            '<img class="oil-bottle" data-state="still" alt="vegetable oil"' +
+            ' src="' + SPRITES + 'still-vegetable-oil.png">' +
+            "</div>"
+        );
+    }
+
     function rectsOverlap(a, b) {
         return !(
             a.right < b.left ||
@@ -101,7 +113,8 @@
      * Returns { start, stop, isActive } controllers.
      */
     function createHoldTimer(opts) {
-        var $progress = $("#cut-progress");
+        var progressSelector = (opts && opts.progressSelector) || "#cut-progress";
+        var $progress = $(progressSelector);
         var $bar = $progress.find(".bar");
         var rafId = null;
         var holdStart = 0;
@@ -481,6 +494,93 @@
         }
     }
 
+    function initHeatOilLesson() {
+        var $stage = $("#stove-stage");
+        var $pan = $stage.find(".pan");
+        var $oil = $stage.find(".oil-bottle");
+
+        if (!$stage.length || !$pan.length || !$oil.length) {
+            return;
+        }
+
+        var STILL_OIL_SRC = SPRITES + "still-vegetable-oil.png";
+        var POUR_OIL_SRC = SPRITES + "pour-vegetable-oil.png";
+
+        function setOilState(state) {
+            if ($oil.attr("data-state") === state) {
+                return;
+            }
+            $oil.attr("data-state", state);
+            $oil.attr(
+                "src",
+                state === "pouring" ? POUR_OIL_SRC : STILL_OIL_SRC
+            );
+        }
+
+        var heatCompleted = false;
+
+        var holdTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                heatCompleted = true;
+                $pan
+                    .attr("src", SPRITES + "bubbling-oil-pan.png")
+                    .attr("data-state", "hot")
+                    .removeClass("heating");
+                try {
+                    $oil.draggable("disable");
+                } catch (e) {}
+                $oil.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                $('.lesson-checkbox[data-task-id="heat-oil"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+            }
+        });
+
+        function checkOverlap() {
+            if (heatCompleted) {
+                return;
+            }
+            var oilEl = $oil.get(0);
+            var panEl = $pan.get(0);
+            if (!oilEl || !panEl) {
+                return;
+            }
+            var oilRect = oilEl.getBoundingClientRect();
+            var panRect = panEl.getBoundingClientRect();
+
+            if (rectsOverlap(oilRect, panRect)) {
+                if (!holdTimer.isActive()) {
+                    setOilState("pouring");
+                    $pan.addClass("heating");
+                    holdTimer.start();
+                }
+            } else if (holdTimer.isActive()) {
+                setOilState("still");
+                $pan.removeClass("heating");
+                holdTimer.stop();
+            }
+        }
+
+        $oil.draggable({
+            containment: "#stove-stage",
+            start: function () {
+                setOilState("pouring");
+            },
+            drag: checkOverlap,
+            stop: function () {
+                if (!heatCompleted) {
+                    setOilState("still");
+                    $pan.removeClass("heating");
+                    holdTimer.stop();
+                }
+            }
+        });
+    }
+
     function renderLesson() {
         var $payload = $("#lesson-data");
         if (!$payload.length) {
@@ -524,6 +624,11 @@
                 '<section class="lesson-game">' +
                 buildCuttingStage() +
                 "</section>";
+        } else if (lesson.minigame === "heat-oil") {
+            gameHtml =
+                '<section class="lesson-game">' +
+                buildStoveStage() +
+                "</section>";
         }
 
         var html =
@@ -538,6 +643,8 @@
 
         if (lesson.minigame === "cut-chicken") {
             initCutChickenLesson();
+        } else if (lesson.minigame === "heat-oil") {
+            initHeatOilLesson();
         }
     }
 

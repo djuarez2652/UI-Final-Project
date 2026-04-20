@@ -8,5 +8,13 @@
       { "text": "Season lightly with salt and white pepper", "auto": true, "id": "season" },
       { "text": "Toss chicken in cornstarch until evenly coated", "auto": true, "id": "toss" }
     ]
+  },
+  "2": {
+    "step_heading": "Step 2: Fry the Chicken",
+    "instructions_label": "Instructions:",
+    "minigame": "heat-oil",
+    "tasks": [
+      { "text": "Heat about 2 cups of vegetable oil in the wok to 350\u00b0F (medium-high heat)", "auto": true, "id": "heat-oil" }
+    ]
   }
 }
