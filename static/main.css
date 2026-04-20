@@ -539,6 +539,86 @@
     transform-origin: center center;
 }
 
+.plate-stove-stage .pan {
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.plate-stove-stage .pan.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.plate-stove-stage .target-plate {
+    position: absolute;
+    left: 50%;
+    top: 16%;
+    transform: translateX(-50%);
+    width: 22%;
+    height: auto;
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.plate-garnish-stage .dish {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 42%;
+    height: auto;
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.plate-garnish-stage .garnish-bowl {
+    position: absolute;
+    left: 8%;
+    top: 28%;
+    width: 18%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.plate-garnish-stage .garnish-bowl.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.plate-garnish-stage .garnish-bowl.pouring {
+    animation: toss-wiggle 0.18s steps(2) infinite;
+    transform-origin: center center;
+}
+
+.plate-garnish-stage .serve-btn {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    transform: translateX(-50%);
+    padding: 0.6rem 1.4rem;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.7rem;
+    color: var(--pixel-black);
+    background: var(--pixel-yellow, #ffd93b);
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    cursor: pointer;
+    z-index: 4;
+}
+
+.plate-garnish-stage .serve-btn:active {
+    transform: translate(calc(-50% + 2px), 2px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.plate-garnish-stage .serve-btn[hidden] {
+    display: none;
+}
+
 #heat-progress {
     position: absolute;
     left: 36%;

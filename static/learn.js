@@ -144,6 +144,31 @@
         );
     }
 
+    function buildPlateStoveStage() {
+        return (
+            '<div id="plate-stove-stage" class="stove-stage plate-stove-stage">' +
+            '<img class="pan" data-state="full" alt="wok" src="' +
+            SPRITES + 'full-pan.png">' +
+            '<div id="heat-progress"><div class="bar"></div></div>' +
+            '<img class="target-plate" alt="serving plate" src="' +
+            SPRITES + 'plain-plate.png">' +
+            "</div>"
+        );
+    }
+
+    function buildPlateGarnishStage() {
+        return (
+            '<div id="plate-garnish-stage" class="sauce-mix-stage plate-garnish-stage">' +
+            '<img class="dish" data-state="plain" alt="plated chicken" src="' +
+            SPRITES + 'plain-plated-chicken.png">' +
+            '<div id="heat-progress"><div class="bar"></div></div>' +
+            '<img class="garnish-bowl" alt="green onion and sesame seeds" src="' +
+            SPRITES + 'green-onion-sesame-seed-bowl.png">' +
+            '<button type="button" class="serve-btn" hidden>Serve</button>' +
+            "</div>"
+        );
+    }
+
     function buildAromaticsStage() {
         return (
             '<div id="aromatics-stage" class="stove-stage aromatics-stage">' +
@@ -1379,6 +1404,164 @@
         });
     }
 
+    function initPlateGarnishLesson() {
+        var $stage = $("#plate-stove-stage");
+        if (!$stage.length) {
+            return;
+        }
+        initPlatePhase();
+    }
+
+    function initPlatePhase() {
+        var $stage = $("#plate-stove-stage");
+        var $pan = $stage.find(".pan");
+        var $plate = $stage.find(".target-plate");
+
+        if (!$pan.length || !$plate.length) {
+            return;
+        }
+
+        var plateCompleted = false;
+
+        var holdTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                plateCompleted = true;
+                $pan.removeClass("cooking");
+                try {
+                    $pan.draggable("disable");
+                } catch (e) {}
+                $('.lesson-checkbox[data-task-id="plate"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+                setTimeout(function () {
+                    var $section = $("#plate-stove-stage").closest(".lesson-game");
+                    $section.fadeOut(250, function () {
+                        $section.html(buildPlateGarnishStage()).fadeIn(250, function () {
+                            initGarnishPhase();
+                        });
+                    });
+                }, 400);
+            }
+        });
+
+        function checkOverlap() {
+            if (plateCompleted) {
+                return;
+            }
+            var panEl = $pan.get(0);
+            var plateEl = $plate.get(0);
+            if (!panEl || !plateEl) {
+                return;
+            }
+            if (rectsOverlap(panEl.getBoundingClientRect(), plateEl.getBoundingClientRect())) {
+                if (!holdTimer.isActive()) {
+                    $pan.addClass("cooking");
+                    holdTimer.start();
+                }
+            } else if (holdTimer.isActive()) {
+                $pan.removeClass("cooking");
+                holdTimer.stop();
+            }
+        }
+
+        $pan.draggable({
+            containment: "#plate-stove-stage",
+            drag: checkOverlap,
+            stop: function () {
+                if (!plateCompleted) {
+                    $pan.removeClass("cooking");
+                    holdTimer.stop();
+                }
+            }
+        });
+    }
+
+    function initGarnishPhase() {
+        var $stage = $("#plate-garnish-stage");
+        var $dish = $stage.find(".dish");
+        var $bowl = $stage.find(".garnish-bowl");
+        var $serveBtn = $stage.find(".serve-btn");
+
+        if (!$dish.length || !$bowl.length) {
+            return;
+        }
+
+        var garnishCompleted = false;
+        var overlapping = false;
+
+        var holdTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                garnishCompleted = true;
+                overlapping = false;
+                $bowl.removeClass("pouring");
+                $dish
+                    .attr("src", SPRITES + "seasoned-plated-chicken.png")
+                    .attr("data-state", "seasoned");
+                try {
+                    $bowl.draggable("disable");
+                } catch (e) {}
+                $bowl.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                $('.lesson-checkbox[data-task-id="garnish"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+                $serveBtn.removeAttr("hidden").hide().fadeIn(250);
+            }
+        });
+
+        function checkOverlap() {
+            if (garnishCompleted) {
+                return;
+            }
+            var bEl = $bowl.get(0);
+            var dEl = $dish.get(0);
+            if (!bEl || !dEl) {
+                return;
+            }
+            var nowOver = rectsOverlap(
+                bEl.getBoundingClientRect(),
+                dEl.getBoundingClientRect()
+            );
+            if (nowOver && !overlapping) {
+                overlapping = true;
+                $bowl.addClass("pouring");
+                holdTimer.start();
+            } else if (!nowOver && overlapping) {
+                overlapping = false;
+                $bowl.removeClass("pouring");
+                holdTimer.stop();
+            }
+        }
+
+        $bowl.draggable({
+            containment: "#plate-garnish-stage",
+            drag: checkOverlap,
+            stop: function () {
+                if (!garnishCompleted && overlapping) {
+                    overlapping = false;
+                    $bowl.removeClass("pouring");
+                    holdTimer.stop();
+                }
+            }
+        });
+
+        $serveBtn.on("click", function () {
+            if ($serveBtn.prop("disabled")) {
+                return;
+            }
+            $serveBtn.prop("disabled", true);
+            $('.lesson-checkbox[data-task-id="serve"]')
+                .prop("checked", true)
+                .addClass("done")
+                .trigger("change");
+        });
+    }
+
     function renderLesson() {
         var $payload = $("#lesson-data");
         if (!$payload.length) {
@@ -1437,6 +1620,11 @@
                 '<section class="lesson-game">' +
                 buildSauceMixStage() +
                 "</section>";
+        } else if (lesson.minigame === "plate-garnish") {
+            gameHtml =
+                '<section class="lesson-game">' +
+                buildPlateStoveStage() +
+                "</section>";
         }
 
         var html =
@@ -1457,6 +1645,8 @@
             initCookAromaticsLesson();
         } else if (lesson.minigame === "make-sauce") {
             initMakeSauceLesson();
+        } else if (lesson.minigame === "plate-garnish") {
+            initPlateGarnishLesson();
         }
     }
 

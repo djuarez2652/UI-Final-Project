@@ -39,5 +39,15 @@
       { "text": "Pour sauce into the wok with the aromatics and bring to a simmer", "auto": true, "id": "pour-sauce" },
       { "text": "Toss the fried chicken back into the wok and stir until every piece is coated", "auto": true, "id": "toss-sauce" }
     ]
+  },
+  "5": {
+    "step_heading": "Step 5: Plate and Garnish",
+    "instructions_label": "Instructions:",
+    "minigame": "plate-garnish",
+    "tasks": [
+      { "text": "Transfer the sauced chicken to a plate", "auto": true, "id": "plate" },
+      { "text": "Garnish with sliced green onions and sesame seeds", "auto": true, "id": "garnish" },
+      { "text": "Serve immediately while the coating is still crispy", "auto": true, "id": "serve" }
+    ]
   }
 }
