@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ lesson.step_heading }}{% endblock %}
+
+{% block content %}
+<main class="container lesson-main" id="lesson-root" data-lesson-id="{{ lesson_id }}"></main>
+<script type="application/json" id="lesson-data">{{ lesson | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='learn.js') }}"></script>
+{% endblock %}

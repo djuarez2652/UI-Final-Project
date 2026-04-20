@@ -65,6 +65,229 @@
     height: auto;
 }
 
+.btn-continue {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.45rem, 1.6vw, 0.65rem);
+    line-height: 1.8;
+    color: #ffffff;
+    background-color: #2d8f47;
+    border: 3px solid var(--pixel-black);
+    border-radius: 0;
+    padding: 0.85rem 1.75rem;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.btn-continue:hover {
+    color: #ffffff;
+    background-color: #267a3d;
+}
+
+.btn-continue:focus-visible {
+    color: #ffffff;
+    outline: 3px solid var(--pixel-black);
+    outline-offset: 3px;
+}
+
+.btn-continue:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+.lesson-main {
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+    max-width: 64rem;
+    text-align: left;
+}
+
+.lesson-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+    .lesson-layout {
+        flex-direction: row;
+    }
+}
+
+.lesson-game {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 32rem;
+}
+
+.lesson-side {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cutting-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    background-image: url("imgs/backgrounds/cutting-board-bg.png");
+    background-size: cover;
+    background-position: center;
+    image-rendering: pixelated;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.cutting-stage .chicken,
+.cutting-stage .knife {
+    position: absolute;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.cutting-stage .chicken {
+    width: 28%;
+    height: auto;
+    left: 36%;
+    top: 42%;
+    transform-origin: center center;
+}
+
+.cutting-stage .knife {
+    width: 22%;
+    height: auto;
+    left: 70%;
+    top: 55%;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.cutting-stage .knife.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.cutting-stage .chicken.chopping {
+    animation: chop-shake 0.18s steps(2) infinite;
+}
+
+@keyframes chop-shake {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(-2px, 1px); }
+    100% { transform: translate(2px, -1px); }
+}
+
+#cut-progress {
+    position: absolute;
+    left: 36%;
+    top: 32%;
+    width: 28%;
+    height: 0.75rem;
+    background-color: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 3;
+}
+
+#cut-progress.visible {
+    display: block;
+}
+
+#cut-progress .bar {
+    width: 0%;
+    height: 100%;
+    background-color: #2d8f47;
+    transition: none;
+}
+
+.lesson-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.lesson-checkbox:disabled:checked {
+    opacity: 1;
+}
+
+.lesson-task-label.disabled {
+    cursor: default;
+}
+
+.lesson-step-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.55rem, 2.2vw, 0.85rem);
+    line-height: 1.7;
+    color: var(--pixel-black);
+    margin-bottom: 1.75rem;
+}
+
+.lesson-instructions-heading {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.45rem, 1.7vw, 0.65rem);
+    line-height: 1.8;
+    color: var(--pixel-black);
+    margin-bottom: 1.25rem;
+    font-weight: 400;
+}
+
+.lesson-task-list {
+    padding-left: 0;
+}
+
+.lesson-task {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.35rem;
+}
+
+.lesson-task:last-child {
+    margin-bottom: 0;
+}
+
+.lesson-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: 0.2rem;
+    margin-left: 0;
+    border: 2px solid var(--pixel-black);
+    border-radius: 0;
+    background-color: #ffffff;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.lesson-checkbox:checked {
+    background-color: #2d8f47;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' d='M2 6l3 3 5-6'/%3E%3C/svg%3E");
+    background-size: 0.65rem auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-color: var(--pixel-black);
+}
+
+.lesson-checkbox:focus {
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px var(--site-bg), 0 0 0 4px var(--pixel-black);
+}
+
+.lesson-task-label {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.38rem, 1.35vw, 0.55rem);
+    line-height: 2;
+    color: var(--pixel-black);
+    cursor: pointer;
+    flex: 1;
+}
+
 .page-main {
     padding-top: 1rem;
     padding-bottom: 3rem;
