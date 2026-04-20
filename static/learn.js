@@ -567,9 +567,6 @@
 
         $oil.draggable({
             containment: "#stove-stage",
-            start: function () {
-                setOilState("pouring");
-            },
             drag: checkOverlap,
             stop: function () {
                 if (!heatCompleted) {
