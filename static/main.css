@@ -390,6 +390,43 @@
     display: none;
 }
 
+.aromatics-stage .spices-plate {
+    position: absolute;
+    left: 50%;
+    top: 16%;
+    transform: translateX(-50%);
+    width: 20%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.aromatics-stage .spices-plate.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.aromatics-stage .spices-plate[hidden] {
+    display: none;
+}
+
+.aromatics-stage .pan {
+    left: 34%;
+    top: 44%;
+    cursor: grab;
+    pointer-events: auto;
+}
+
+.aromatics-stage .pan.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.aromatics-stage .pan.stirring {
+    animation: toss-wiggle 0.18s steps(2) infinite;
+    transform-origin: center center;
+}
+
 #heat-progress {
     position: absolute;
     left: 36%;

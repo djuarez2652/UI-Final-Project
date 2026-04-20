@@ -105,6 +105,18 @@
         );
     }
 
+    function buildAromaticsStage() {
+        return (
+            '<div id="aromatics-stage" class="stove-stage aromatics-stage">' +
+            '<img class="pan" data-state="cooked" alt="wok" src="' +
+            SPRITES + 'cooked-chicken-oil-pan.png">' +
+            '<div id="heat-progress"><div class="bar"></div></div>' +
+            '<img class="spices-plate" alt="aromatic spices plate" hidden' +
+            ' src="' + SPRITES + 'aromatic-spices-plate.png">' +
+            "</div>"
+        );
+    }
+
     function rectsOverlap(a, b) {
         return !(
             a.right < b.left ||
@@ -784,6 +796,200 @@
         });
     }
 
+    function initCookAromaticsLesson() {
+        var $stage = $("#aromatics-stage");
+        if (!$stage.length) {
+            return;
+        }
+        initDrainOilPhase();
+    }
+
+    function initDrainOilPhase() {
+        var $pan = $("#aromatics-stage").find(".pan");
+        if (!$pan.length) {
+            return;
+        }
+        setTimeout(function () {
+            $pan
+                .attr("src", SPRITES + "less-oil-pan.png")
+                .attr("data-state", "drained");
+            $('.lesson-checkbox[data-task-id="drain-oil"]')
+                .prop("checked", true)
+                .addClass("done")
+                .trigger("change");
+            initAddSpicesPhase();
+        }, 400);
+    }
+
+    function initAddSpicesPhase() {
+        var $stage = $("#aromatics-stage");
+        var $pan = $stage.find(".pan");
+        var $plate = $stage.find(".spices-plate");
+
+        if (!$pan.length || !$plate.length) {
+            return;
+        }
+
+        $plate.removeAttr("hidden").hide().fadeIn(250);
+
+        var addCompleted = false;
+
+        var holdTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                addCompleted = true;
+                $pan
+                    .attr("src", SPRITES + "aromatic-spices-oil-pan.png")
+                    .attr("data-state", "spiced")
+                    .removeClass("cooking");
+                try {
+                    $plate.draggable("disable");
+                } catch (e) {}
+                $plate.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                $('.lesson-checkbox[data-task-id="add-spices"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+                initStirFryPhase();
+            }
+        });
+
+        function checkOverlap() {
+            if (addCompleted) {
+                return;
+            }
+            var plateEl = $plate.get(0);
+            var panEl = $pan.get(0);
+            if (!plateEl || !panEl) {
+                return;
+            }
+            if (rectsOverlap(plateEl.getBoundingClientRect(), panEl.getBoundingClientRect())) {
+                if (!holdTimer.isActive()) {
+                    $pan.addClass("cooking");
+                    holdTimer.start();
+                }
+            } else if (holdTimer.isActive()) {
+                $pan.removeClass("cooking");
+                holdTimer.stop();
+            }
+        }
+
+        $plate.draggable({
+            containment: "#aromatics-stage",
+            drag: checkOverlap,
+            stop: function () {
+                if (!addCompleted) {
+                    $pan.removeClass("cooking");
+                    holdTimer.stop();
+                }
+            }
+        });
+    }
+
+    function initStirFryPhase() {
+        var $stage = $("#aromatics-stage");
+        var $pan = $stage.find(".pan");
+        var $progress = $("#heat-progress");
+        var $bar = $progress.find(".bar");
+
+        if (!$pan.length) {
+            return;
+        }
+
+        var STIR_TARGET_MS = 6000;
+        var MIN_DISTANCE = 5;
+        var MAX_DT = 150;
+        var IDLE_HIDE_MS = 200;
+
+        var stirMs = 0;
+        var lastX = null;
+        var lastY = null;
+        var lastT = 0;
+        var idleTimeoutId = null;
+        var stirCompleted = false;
+
+        function updateBar() {
+            var pct = Math.min(100, (stirMs / STIR_TARGET_MS) * 100);
+            $bar.css("width", pct + "%");
+        }
+
+        function clearIdleTimeout() {
+            if (idleTimeoutId !== null) {
+                clearTimeout(idleTimeoutId);
+                idleTimeoutId = null;
+            }
+        }
+
+        function scheduleIdle() {
+            clearIdleTimeout();
+            idleTimeoutId = setTimeout(function () {
+                $pan.removeClass("stirring");
+            }, IDLE_HIDE_MS);
+        }
+
+        function completeStir() {
+            stirCompleted = true;
+            clearIdleTimeout();
+            $pan.removeClass("stirring");
+            try {
+                $pan.draggable("disable");
+            } catch (e) {}
+            $progress.removeClass("visible");
+            $bar.css("width", "0%");
+            $('.lesson-checkbox[data-task-id="stir-fry"]')
+                .prop("checked", true)
+                .addClass("done")
+                .trigger("change");
+        }
+
+        $pan.draggable({
+            containment: "#aromatics-stage",
+            start: function (event) {
+                if (stirCompleted) {
+                    return;
+                }
+                lastX = event.pageX;
+                lastY = event.pageY;
+                lastT = performance.now();
+                $progress.addClass("visible");
+                $pan.addClass("stirring");
+                updateBar();
+            },
+            drag: function (event) {
+                if (stirCompleted) {
+                    return;
+                }
+                var now = performance.now();
+                var dt = now - lastT;
+                var dx = event.pageX - lastX;
+                var dy = event.pageY - lastY;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist >= MIN_DISTANCE && dt > 0 && dt <= MAX_DT) {
+                    stirMs += dt;
+                    $pan.addClass("stirring");
+                    scheduleIdle();
+                    updateBar();
+                    if (stirMs >= STIR_TARGET_MS) {
+                        completeStir();
+                    }
+                }
+
+                lastX = event.pageX;
+                lastY = event.pageY;
+                lastT = now;
+            },
+            stop: function () {
+                clearIdleTimeout();
+                if (!stirCompleted) {
+                    $pan.removeClass("stirring");
+                }
+            }
+        });
+    }
+
     function renderLesson() {
         var $payload = $("#lesson-data");
         if (!$payload.length) {
@@ -832,6 +1038,11 @@
                 '<section class="lesson-game">' +
                 buildStoveStage() +
                 "</section>";
+        } else if (lesson.minigame === "cook-aromatics") {
+            gameHtml =
+                '<section class="lesson-game">' +
+                buildAromaticsStage() +
+                "</section>";
         }
 
         var html =
@@ -848,6 +1059,8 @@
             initCutChickenLesson();
         } else if (lesson.minigame === "heat-oil") {
             initHeatOilLesson();
+        } else if (lesson.minigame === "cook-aromatics") {
+            initCookAromaticsLesson();
         }
     }
 

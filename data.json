@@ -19,5 +19,15 @@
       { "text": "Fry for 3-4 minutes per batch until golden brown and cooked through", "auto": true, "id": "fry-cook" },
       { "text": "Remove with chopsticks or a slotted spoon and set aside in a bowl", "auto": true, "id": "fry-transfer" }
     ]
+  },
+  "3": {
+    "step_heading": "Step 3: Cook the Aromatics",
+    "instructions_label": "Instructions:",
+    "minigame": "cook-aromatics",
+    "tasks": [
+      { "text": "Drain most of the oil, leaving about 1 tablespoon in the wok", "auto": true, "id": "drain-oil" },
+      { "text": "Add dried chilies, minced garlic, and sliced ginger", "auto": true, "id": "add-spices" },
+      { "text": "Stir fry for about 30 seconds until fragrant", "auto": true, "id": "stir-fry" }
+    ]
   }
 }
