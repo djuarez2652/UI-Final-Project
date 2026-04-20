@@ -365,6 +365,14 @@
     flex: 1;
 }
 
+.lesson-continue-wrap {
+    margin-top: 1.75rem;
+}
+
+.lesson-continue-wrap.is-hidden {
+    display: none;
+}
+
 .page-main {
     padding-top: 1rem;
     padding-bottom: 3rem;

@@ -26,13 +26,16 @@
     function buildTaskList(tasks, lessonId) {
         var items = $.map(tasks, function (task, index) {
             var domId = "lesson-" + lessonId + "-task-" + (index + 1);
+            var disabledAttr = task.auto ? " disabled" : "";
+            var labelClass = "lesson-task-label" + (task.auto ? " disabled" : "");
             return (
                 '<li class="lesson-task">' +
-                '<input type="checkbox" class="lesson-checkbox" disabled' +
+                '<input type="checkbox" class="lesson-checkbox"' +
+                disabledAttr +
                 ' id="' + domId + '"' +
                 ' data-task-id="' + escapeHtml(task.id) + '"' +
                 ' data-auto="' + (task.auto ? "true" : "false") + '">' +
-                '<label class="lesson-task-label disabled" for="' + domId + '">' +
+                '<label class="' + labelClass + '" for="' + domId + '">' +
                 escapeHtml(task.text) +
                 "</label>" +
                 "</li>"
@@ -40,6 +43,29 @@
         }).join("");
 
         return '<ul class="list-unstyled lesson-task-list mb-0">' + items + "</ul>";
+    }
+
+    function updateContinueVisibility() {
+        var $wrap = $(".lesson-continue-wrap");
+        if (!$wrap.length) {
+            return;
+        }
+
+        var $boxes = $(".lesson-side .lesson-checkbox");
+        if (!$boxes.length) {
+            $wrap.addClass("is-hidden");
+            return;
+        }
+
+        var allChecked = true;
+        $boxes.each(function () {
+            if (!this.checked) {
+                allChecked = false;
+                return false;
+            }
+        });
+
+        $wrap.toggleClass("is-hidden", !allChecked);
     }
 
     function buildCuttingStage() {
@@ -154,7 +180,8 @@
                 });
                 $('.lesson-checkbox[data-task-id="cut"]')
                     .prop("checked", true)
-                    .addClass("done");
+                    .addClass("done")
+                    .trigger("change");
 
                 initSeasoningPhase();
             }
@@ -212,7 +239,8 @@
             if (done.salt && done.pepper) {
                 $('.lesson-checkbox[data-task-id="season"]')
                     .prop("checked", true)
-                    .addClass("done");
+                    .addClass("done")
+                    .trigger("change");
                 $shakers.each(function () {
                     var $s = $(this);
                     $s.fadeOut(200, function () {
@@ -402,7 +430,8 @@
                 $bar.css("width", "0%");
                 $('.lesson-checkbox[data-task-id="toss"]')
                     .prop("checked", true)
-                    .addClass("done");
+                    .addClass("done")
+                    .trigger("change");
             }
 
             $bowl.draggable({
@@ -482,6 +511,11 @@
             escapeHtml(lesson.instructions_label) +
             "</h2>" +
             buildTaskList(tasks, lessonId) +
+            '<div class="lesson-continue-wrap is-hidden">' +
+            '<a class="btn btn-continue" href="/learn/' +
+            (Number(lessonId) + 1) +
+            '">Continue</a>' +
+            "</div>" +
             "</aside>";
 
         var gameHtml = "";
@@ -496,6 +530,11 @@
             '<div class="lesson-layout">' + gameHtml + sideHtml + "</div>";
 
         $("#lesson-root").html(html);
+
+        $("#lesson-root")
+            .off("change.lesson")
+            .on("change.lesson", ".lesson-checkbox", updateContinueVisibility);
+        updateContinueVisibility();
 
         if (lesson.minigame === "cut-chicken") {
             initCutChickenLesson();
