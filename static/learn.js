@@ -1,12 +1,12 @@
 /**
  * Controller: reads lesson payload, builds HTML, injects into the view with jQuery.
- * Also wires up per-lesson mini-games (currently: cut-chicken).
+ * Also wires up per-lesson mini-games (currently: cut-chicken with cut + season phases).
  */
 (function ($) {
     var STATIC_BASE = "/static/";
     var SPRITES = STATIC_BASE + "imgs/sprites/";
 
-    var CUT_HOLD_MS = 2000;
+    var HOLD_MS = 2000;
 
     function escapeHtml(text) {
         return $("<div/>").text(text).html();
@@ -49,6 +49,10 @@
             SPRITES + 'chicken-precut.png">' +
             '<div id="cut-progress"><div class="bar"></div></div>' +
             '<img class="knife" alt="knife" src="' + SPRITES + 'knife.png">' +
+            '<img class="shaker salt" data-shaker="salt" data-state="still" alt="salt shaker" hidden' +
+            ' src="' + SPRITES + 'still-salt-shaker.png">' +
+            '<img class="shaker pepper" data-shaker="pepper" data-state="still" alt="white pepper shaker" hidden' +
+            ' src="' + SPRITES + 'still-white-pepper-shaker.png">' +
             "</div>"
         );
     }
@@ -62,24 +66,19 @@
         );
     }
 
-    function initCutChickenGame() {
-        var $stage = $("#cutting-stage");
-        var $knife = $stage.find(".knife");
-        var $chicken = $stage.find(".chicken");
+    /**
+     * Generic 2s hold timer with progress-bar feedback. Reused by every phase.
+     * Returns { start, stop, isActive } controllers.
+     */
+    function createHoldTimer(opts) {
         var $progress = $("#cut-progress");
         var $bar = $progress.find(".bar");
-
-        if (!$stage.length || !$knife.length || !$chicken.length) {
-            return;
-        }
-
         var rafId = null;
         var holdStart = 0;
-        var overlapping = false;
-        var completed = false;
+        var active = false;
 
-        function stopHolding() {
-            overlapping = false;
+        function reset() {
+            active = false;
             holdStart = 0;
             if (rafId !== null) {
                 cancelAnimationFrame(rafId);
@@ -87,52 +86,78 @@
             }
             $bar.css("width", "0%");
             $progress.removeClass("visible");
-            $chicken.removeClass("chopping");
         }
 
         function tick(now) {
-            if (!overlapping || completed) {
+            if (!active) {
                 return;
             }
             var elapsed = now - holdStart;
-            var pct = Math.min(100, (elapsed / CUT_HOLD_MS) * 100);
+            var pct = Math.min(100, (elapsed / HOLD_MS) * 100);
             $bar.css("width", pct + "%");
-
-            if (elapsed >= CUT_HOLD_MS) {
-                completeCut();
+            if (elapsed >= HOLD_MS) {
+                var done = opts.onComplete;
+                reset();
+                if (typeof done === "function") {
+                    done();
+                }
                 return;
             }
             rafId = requestAnimationFrame(tick);
         }
 
-        function startHolding() {
-            if (overlapping || completed) {
-                return;
+        return {
+            start: function () {
+                if (active) {
+                    return;
+                }
+                active = true;
+                holdStart = performance.now();
+                $progress.addClass("visible");
+                $bar.css("width", "0%");
+                rafId = requestAnimationFrame(tick);
+            },
+            stop: reset,
+            isActive: function () {
+                return active;
             }
-            overlapping = true;
-            holdStart = performance.now();
-            $progress.addClass("visible");
-            $chicken.addClass("chopping");
-            $bar.css("width", "0%");
-            rafId = requestAnimationFrame(tick);
+        };
+    }
+
+    function initCutChickenLesson() {
+        var $stage = $("#cutting-stage");
+        var $knife = $stage.find(".knife");
+        var $chicken = $stage.find(".chicken");
+
+        if (!$stage.length || !$knife.length || !$chicken.length) {
+            return;
         }
 
-        function completeCut() {
-            completed = true;
-            stopHolding();
-            $chicken
-                .attr("src", SPRITES + "chicken-cut.png")
-                .attr("data-state", "cut");
-            try {
-                $knife.draggable("disable");
-            } catch (e) {}
-            $('.lesson-checkbox[data-task-id="cut"]')
-                .prop("checked", true)
-                .addClass("done");
-        }
+        var cutCompleted = false;
+
+        var holdTimer = createHoldTimer({
+            onComplete: function () {
+                cutCompleted = true;
+                $chicken
+                    .attr("src", SPRITES + "chicken-cut.png")
+                    .attr("data-state", "cut")
+                    .removeClass("chopping");
+                try {
+                    $knife.draggable("disable");
+                } catch (e) {}
+                $knife.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                $('.lesson-checkbox[data-task-id="cut"]')
+                    .prop("checked", true)
+                    .addClass("done");
+
+                initSeasoningPhase();
+            }
+        });
 
         function checkOverlap() {
-            if (completed) {
+            if (cutCompleted) {
                 return;
             }
             var knifeEl = $knife.get(0);
@@ -144,28 +169,114 @@
             var chickenRect = chickenEl.getBoundingClientRect();
 
             if (rectsOverlap(knifeRect, chickenRect)) {
-                if (!overlapping) {
-                    startHolding();
+                if (!holdTimer.isActive()) {
+                    $chicken.addClass("chopping");
+                    holdTimer.start();
                 }
-            } else if (overlapping) {
-                stopHolding();
+            } else if (holdTimer.isActive()) {
+                $chicken.removeClass("chopping");
+                holdTimer.stop();
             }
         }
 
         $knife.draggable({
             containment: "#cutting-stage",
-            start: function () {
-                $knife.addClass("dragging");
-            },
-            drag: function () {
-                checkOverlap();
-            },
+            drag: checkOverlap,
             stop: function () {
-                $knife.removeClass("dragging");
-                if (!completed) {
-                    stopHolding();
+                if (!cutCompleted) {
+                    $chicken.removeClass("chopping");
+                    holdTimer.stop();
                 }
             }
+        });
+    }
+
+    function initSeasoningPhase() {
+        var $stage = $("#cutting-stage");
+        var $chicken = $stage.find(".chicken");
+        var $shakers = $stage.find(".shaker");
+
+        if (!$shakers.length) {
+            return;
+        }
+
+        $shakers.removeAttr("hidden");
+
+        var done = { salt: false, pepper: false };
+
+        function checkAllSeasoned() {
+            if (done.salt && done.pepper) {
+                $('.lesson-checkbox[data-task-id="season"]')
+                    .prop("checked", true)
+                    .addClass("done");
+            }
+        }
+
+        $shakers.each(function () {
+            var $shaker = $(this);
+            var kind = $shaker.data("shaker");
+            var stillSrc =
+                kind === "salt"
+                    ? SPRITES + "still-salt-shaker.png"
+                    : SPRITES + "still-white-pepper-shaker.png";
+            var shakingSrc =
+                kind === "salt"
+                    ? SPRITES + "shaking-salt-shaker.png"
+                    : SPRITES + "shaking-white-pepper-shaker.png";
+
+            var holdTimer = createHoldTimer({
+                onComplete: function () {
+                    done[kind] = true;
+                    $chicken.removeClass("seasoning");
+                    $shaker.attr("src", stillSrc).attr("data-state", "still");
+                    try {
+                        $shaker.draggable("disable");
+                    } catch (e) {}
+                    checkAllSeasoned();
+                }
+            });
+
+            function checkOverlap() {
+                if (done[kind]) {
+                    return;
+                }
+                var shakerEl = $shaker.get(0);
+                var chickenEl = $chicken.get(0);
+                if (!shakerEl || !chickenEl) {
+                    return;
+                }
+                var sRect = shakerEl.getBoundingClientRect();
+                var cRect = chickenEl.getBoundingClientRect();
+
+                if (rectsOverlap(sRect, cRect)) {
+                    if (!holdTimer.isActive()) {
+                        $chicken.addClass("seasoning");
+                        holdTimer.start();
+                    }
+                } else if (holdTimer.isActive()) {
+                    $chicken.removeClass("seasoning");
+                    holdTimer.stop();
+                }
+            }
+
+            $shaker.draggable({
+                containment: "#cutting-stage",
+                start: function () {
+                    $shaker
+                        .attr("src", shakingSrc)
+                        .attr("data-state", "shaking");
+                },
+                drag: checkOverlap,
+                stop: function () {
+                    $chicken.removeClass("seasoning");
+                    holdTimer.stop();
+                    if (!done[kind]) {
+                        $shaker
+                            .attr("src", stillSrc)
+                            .attr("data-state", "still");
+                    }
+                }
+            });
         });
     }
 
@@ -215,7 +326,7 @@
         $("#lesson-root").html(html);
 
         if (lesson.minigame === "cut-chicken") {
-            initCutChickenGame();
+            initCutChickenLesson();
         }
     }
 

@@ -5,7 +5,7 @@
     "minigame": "cut-chicken",
     "tasks": [
       { "text": "Cut 1 lb chicken thighs into bite-sized pieces (1 inch cubes)", "auto": true, "id": "cut" },
-      { "text": "Season lightly with salt and white pepper", "auto": false },
+      { "text": "Season lightly with salt and white pepper", "auto": true, "id": "season" },
       { "text": "Toss chicken in cornstarch until evenly coated", "auto": false }
     ]
   }

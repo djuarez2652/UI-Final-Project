@@ -172,8 +172,37 @@
     cursor: grabbing;
 }
 
-.cutting-stage .chicken.chopping {
+.cutting-stage .chicken.chopping,
+.cutting-stage .chicken.seasoning {
     animation: chop-shake 0.18s steps(2) infinite;
+}
+
+.cutting-stage .shaker {
+    position: absolute;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 2;
+    width: 14%;
+    height: auto;
+}
+
+.cutting-stage .shaker.salt {
+    left: 8%;
+    top: 58%;
+}
+
+.cutting-stage .shaker.pepper {
+    left: 24%;
+    top: 58%;
+}
+
+.cutting-stage .shaker.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.cutting-stage .shaker[hidden] {
+    display: none;
 }
 
 @keyframes chop-shake {
