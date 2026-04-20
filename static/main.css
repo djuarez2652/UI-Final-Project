@@ -1,18 +1,92 @@
 :root {
-    --base-color: #1f2a44;
-    --base-color-hover: #182136;
+    --pixel-black: #000000;
+    --site-bg: #ffffff;
 }
 
-body {
-    color: var(--base-color);
+.site-body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--site-bg);
+    color: var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    padding-top: 4.5rem;
 }
 
-.navbar-brand,
-.nav-link {
-    color: var(--base-color);
+.site-nav {
+    background-color: var(--site-bg);
+    border-bottom: 1px solid var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
 }
 
-.nav-link:hover,
-.nav-link:focus {
-    color: var(--base-color-hover);
+.site-nav-link {
+    color: var(--pixel-black) !important;
+    font-size: 0.55rem;
+    letter-spacing: 0.02em;
+    padding: 0.5rem 0.25rem !important;
+    text-decoration: none;
+}
+
+.site-nav-link:hover,
+.site-nav-link:focus {
+    color: var(--pixel-black) !important;
+    opacity: 0.85;
+}
+
+.site-nav-link.active {
+    text-decoration: underline;
+    text-underline-offset: 0.35rem;
+}
+
+.welcome-main {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 720px;
+}
+
+.welcome-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.65rem, 2.5vw, 1rem);
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    color: var(--pixel-black);
+    text-transform: uppercase;
+}
+
+.welcome-subtitle {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.5rem, 1.8vw, 0.75rem);
+    line-height: 1.8;
+    color: var(--pixel-black);
+    margin-bottom: 0;
+}
+
+.welcome-hero {
+    max-width: min(100%, 520px);
+    height: auto;
+}
+
+.page-main {
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+    max-width: 640px;
+}
+
+.page-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.55rem, 2vw, 0.85rem);
+    line-height: 1.8;
+    color: var(--pixel-black);
+}
+
+.page-lead {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.45rem, 1.6vw, 0.65rem);
+    line-height: 2;
+    color: var(--pixel-black);
+}
+
+@media (min-width: 768px) {
+    .site-nav-link {
+        font-size: 0.65rem;
+    }
 }
