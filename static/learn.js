@@ -53,6 +53,10 @@
             ' src="' + SPRITES + 'still-salt-shaker.png">' +
             '<img class="shaker pepper" data-shaker="pepper" data-state="still" alt="white pepper shaker" hidden' +
             ' src="' + SPRITES + 'still-white-pepper-shaker.png">' +
+            '<img class="bowl" data-state="plain" alt="bowl of chicken" hidden' +
+            ' src="' + SPRITES + 'plain-chicken-bowl.png">' +
+            '<img class="cornstarch" alt="cornstarch" hidden' +
+            ' src="' + SPRITES + 'cornstarch.png">' +
             "</div>"
         );
     }
@@ -209,6 +213,13 @@
                 $('.lesson-checkbox[data-task-id="season"]')
                     .prop("checked", true)
                     .addClass("done");
+                $shakers.each(function () {
+                    var $s = $(this);
+                    $s.fadeOut(200, function () {
+                        $(this).remove();
+                    });
+                });
+                initTossPhase();
             }
         }
 
@@ -278,6 +289,167 @@
                 }
             });
         });
+    }
+
+    function initTossPhase() {
+        var $stage = $("#cutting-stage");
+        var $chicken = $stage.find(".chicken");
+        var $bowl = $stage.find(".bowl");
+        var $cornstarch = $stage.find(".cornstarch");
+        var $progress = $("#cut-progress");
+        var $bar = $progress.find(".bar");
+
+        if (!$bowl.length || !$cornstarch.length) {
+            return;
+        }
+
+        $chicken.fadeOut(250, function () {
+            $(this).remove();
+        });
+        $bowl.removeAttr("hidden").hide().fadeIn(250);
+        $cornstarch.removeAttr("hidden").hide().fadeIn(250);
+
+        var pourCompleted = false;
+        var tossCompleted = false;
+
+        var pourTimer = createHoldTimer({
+            onComplete: function () {
+                pourCompleted = true;
+                $bowl.removeClass("tossing");
+                try {
+                    $cornstarch.draggable("disable");
+                } catch (e) {}
+                $cornstarch.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                startTossStep();
+            }
+        });
+
+        function pourOverlap() {
+            if (pourCompleted) {
+                return;
+            }
+            var cEl = $cornstarch.get(0);
+            var bEl = $bowl.get(0);
+            if (!cEl || !bEl) {
+                return;
+            }
+            if (rectsOverlap(cEl.getBoundingClientRect(), bEl.getBoundingClientRect())) {
+                if (!pourTimer.isActive()) {
+                    $bowl.addClass("tossing");
+                    pourTimer.start();
+                }
+            } else if (pourTimer.isActive()) {
+                $bowl.removeClass("tossing");
+                pourTimer.stop();
+            }
+        }
+
+        $cornstarch.draggable({
+            containment: "#cutting-stage",
+            drag: pourOverlap,
+            stop: function () {
+                if (!pourCompleted) {
+                    $bowl.removeClass("tossing");
+                    pourTimer.stop();
+                }
+            }
+        });
+
+        function startTossStep() {
+            var TOSS_TARGET_MS = 4000;
+            var MIN_DISTANCE = 5;
+            var MAX_DT = 150;
+            var IDLE_HIDE_MS = 200;
+
+            var tossMs = 0;
+            var lastX = null;
+            var lastY = null;
+            var lastT = 0;
+            var idleTimeoutId = null;
+
+            function updateBar() {
+                var pct = Math.min(100, (tossMs / TOSS_TARGET_MS) * 100);
+                $bar.css("width", pct + "%");
+            }
+
+            function clearIdleTimeout() {
+                if (idleTimeoutId !== null) {
+                    clearTimeout(idleTimeoutId);
+                    idleTimeoutId = null;
+                }
+            }
+
+            function scheduleIdle() {
+                clearIdleTimeout();
+                idleTimeoutId = setTimeout(function () {
+                    $bowl.removeClass("tossing");
+                }, IDLE_HIDE_MS);
+            }
+
+            function completeToss() {
+                tossCompleted = true;
+                clearIdleTimeout();
+                $bowl
+                    .removeClass("tossing")
+                    .attr("src", SPRITES + "cornstarch-chicken-bowl.png")
+                    .attr("data-state", "coated");
+                try {
+                    $bowl.draggable("disable");
+                } catch (e) {}
+                $progress.removeClass("visible");
+                $bar.css("width", "0%");
+                $('.lesson-checkbox[data-task-id="toss"]')
+                    .prop("checked", true)
+                    .addClass("done");
+            }
+
+            $bowl.draggable({
+                containment: "#cutting-stage",
+                start: function (event) {
+                    if (tossCompleted) {
+                        return;
+                    }
+                    lastX = event.pageX;
+                    lastY = event.pageY;
+                    lastT = performance.now();
+                    $progress.addClass("visible");
+                    $bowl.addClass("tossing");
+                    updateBar();
+                },
+                drag: function (event) {
+                    if (tossCompleted) {
+                        return;
+                    }
+                    var now = performance.now();
+                    var dt = now - lastT;
+                    var dx = event.pageX - lastX;
+                    var dy = event.pageY - lastY;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist >= MIN_DISTANCE && dt > 0 && dt <= MAX_DT) {
+                        tossMs += dt;
+                        $bowl.addClass("tossing");
+                        scheduleIdle();
+                        updateBar();
+                        if (tossMs >= TOSS_TARGET_MS) {
+                            completeToss();
+                        }
+                    }
+
+                    lastX = event.pageX;
+                    lastY = event.pageY;
+                    lastT = now;
+                },
+                stop: function () {
+                    clearIdleTimeout();
+                    if (!tossCompleted) {
+                        $bowl.removeClass("tossing");
+                    }
+                }
+            });
+        }
     }
 
     function renderLesson() {
