@@ -427,6 +427,118 @@
     transform-origin: center center;
 }
 
+.sauce-mix-stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    border: 4px solid var(--pixel-black);
+    image-rendering: pixelated;
+    background-image: url("/static/imgs/backgrounds/empty-default-bg.png");
+    background-size: cover;
+    background-position: center;
+    box-shadow: 6px 6px 0 var(--pixel-black);
+    overflow: hidden;
+}
+
+.sauce-mix-stage .mix-bowl {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: auto;
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.sauce-mix-stage .ingredient {
+    position: absolute;
+    width: 14%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.sauce-mix-stage .ingredient.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.sauce-mix-stage .ing-soy {
+    left: 6%;
+    top: 20%;
+}
+
+.sauce-mix-stage .ing-vinegar {
+    left: 6%;
+    top: 60%;
+}
+
+.sauce-mix-stage .ing-sugar {
+    left: 80%;
+    top: 22%;
+    width: 16%;
+}
+
+.sauce-mix-stage .ing-orange {
+    left: 80%;
+    top: 60%;
+    width: 16%;
+}
+
+.sauce-mix-stage .ing-sesame {
+    left: 45%;
+    top: 8%;
+}
+
+.sauce-pour-stage .sauce-bowl {
+    position: absolute;
+    left: 38%;
+    top: 14%;
+    width: 18%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.sauce-pour-stage .sauce-bowl.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.sauce-pour-stage .chicken-bowl {
+    position: absolute;
+    left: 66%;
+    top: 14%;
+    width: 22%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.sauce-pour-stage .chicken-bowl.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.sauce-pour-stage .pan {
+    cursor: grab;
+    pointer-events: auto;
+}
+
+.sauce-pour-stage .pan.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.sauce-pour-stage .pan.stirring {
+    animation: toss-wiggle 0.18s steps(2) infinite;
+    transform-origin: center center;
+}
+
 #heat-progress {
     position: absolute;
     left: 36%;

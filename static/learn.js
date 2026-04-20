@@ -105,6 +105,45 @@
         );
     }
 
+    function buildSauceMixStage() {
+        return (
+            '<div id="sauce-mix-stage" class="sauce-mix-stage">' +
+            '<img class="mix-bowl" data-state="empty" alt="mixing bowl" src="' +
+            SPRITES + 'empty-bowl.png">' +
+            '<div id="heat-progress"><div class="bar"></div></div>' +
+            '<img class="ingredient ing-soy" data-id="soy"' +
+            ' data-still="still-soy-sauce.png" data-pouring="pouring-soy-sauce.png"' +
+            ' alt="soy sauce" src="' + SPRITES + 'still-soy-sauce.png">' +
+            '<img class="ingredient ing-vinegar" data-id="vinegar"' +
+            ' data-still="still-rice-vinegar.png" data-pouring="pouring-rice-vinegar.png"' +
+            ' alt="rice vinegar" src="' + SPRITES + 'still-rice-vinegar.png">' +
+            '<img class="ingredient ing-sugar" data-id="sugar"' +
+            ' data-still="sugar-bowl.png" data-pouring="pouring-sugar-bowl.png"' +
+            ' alt="sugar" src="' + SPRITES + 'sugar-bowl.png">' +
+            '<img class="ingredient ing-orange" data-id="orange"' +
+            ' data-still="orange-slices.png" data-pouring="orange-slices.png"' +
+            ' alt="orange slices" src="' + SPRITES + 'orange-slices.png">' +
+            '<img class="ingredient ing-sesame" data-id="sesame"' +
+            ' data-still="still-sesame-oil.png" data-pouring="pouring-sesame-oil.png"' +
+            ' alt="sesame oil" src="' + SPRITES + 'still-sesame-oil.png">' +
+            "</div>"
+        );
+    }
+
+    function buildSaucePourStage() {
+        return (
+            '<div id="sauce-pour-stage" class="stove-stage sauce-pour-stage">' +
+            '<img class="pan" data-state="spiced" alt="wok" src="' +
+            SPRITES + 'aromatic-spices-oil-pan.png">' +
+            '<div id="heat-progress"><div class="bar"></div></div>' +
+            '<img class="sauce-bowl" data-state="still" alt="sauce bowl" src="' +
+            SPRITES + 'still-sauce-bowl.png">' +
+            '<img class="chicken-bowl" alt="fried chicken bowl" src="' +
+            SPRITES + 'little-fried-chicken-bowl.png">' +
+            "</div>"
+        );
+    }
+
     function buildAromaticsStage() {
         return (
             '<div id="aromatics-stage" class="stove-stage aromatics-stage">' +
@@ -990,6 +1029,356 @@
         });
     }
 
+    function initMakeSauceLesson() {
+        var $stage = $("#sauce-mix-stage");
+        if (!$stage.length) {
+            return;
+        }
+        initMixSaucePhase();
+    }
+
+    function initMixSaucePhase() {
+        var $stage = $("#sauce-mix-stage");
+        var $bowl = $stage.find(".mix-bowl");
+        if (!$bowl.length) {
+            return;
+        }
+
+        var completed = {};
+        var total = $stage.find(".ingredient").length;
+
+        $stage.find(".ingredient").each(function () {
+            var $ing = $(this);
+            var id = $ing.attr("data-id");
+            var stillSrc = SPRITES + $ing.attr("data-still");
+            var pouringSrc = SPRITES + $ing.attr("data-pouring");
+            var doneThis = false;
+            var overlapping = false;
+
+            var holdTimer = createHoldTimer({
+                progressSelector: "#heat-progress",
+                onComplete: function () {
+                    doneThis = true;
+                    $ing.attr("src", stillSrc);
+                    try {
+                        $ing.draggable("disable");
+                    } catch (e) {}
+                    $ing.fadeOut(200, function () {
+                        $(this).remove();
+                    });
+                    completed[id] = true;
+                    if (Object.keys(completed).length === total) {
+                        finishMixPhase();
+                    }
+                }
+            });
+
+            function checkOverlap() {
+                if (doneThis) {
+                    return;
+                }
+                var iEl = $ing.get(0);
+                var bEl = $bowl.get(0);
+                if (!iEl || !bEl) {
+                    return;
+                }
+                var nowOver = rectsOverlap(
+                    iEl.getBoundingClientRect(),
+                    bEl.getBoundingClientRect()
+                );
+                if (nowOver && !overlapping) {
+                    overlapping = true;
+                    $ing.attr("src", pouringSrc);
+                    holdTimer.start();
+                } else if (!nowOver && overlapping) {
+                    overlapping = false;
+                    $ing.attr("src", stillSrc);
+                    holdTimer.stop();
+                }
+            }
+
+            $ing.draggable({
+                containment: "#sauce-mix-stage",
+                drag: checkOverlap,
+                stop: function () {
+                    if (!doneThis && overlapping) {
+                        overlapping = false;
+                        $ing.attr("src", stillSrc);
+                        holdTimer.stop();
+                    }
+                }
+            });
+        });
+
+        function finishMixPhase() {
+            $bowl
+                .attr("src", SPRITES + "still-sauce-bowl.png")
+                .attr("data-state", "full");
+            $('.lesson-checkbox[data-task-id="mix-sauce"]')
+                .prop("checked", true)
+                .addClass("done")
+                .trigger("change");
+            setTimeout(function () {
+                var $section = $("#sauce-mix-stage").closest(".lesson-game");
+                $section.fadeOut(250, function () {
+                    $section.html(buildSaucePourStage()).fadeIn(250, function () {
+                        initPourSaucePhase();
+                    });
+                });
+            }, 600);
+        }
+    }
+
+    function initPourSaucePhase() {
+        var $stage = $("#sauce-pour-stage");
+        var $pan = $stage.find(".pan");
+        var $sauce = $stage.find(".sauce-bowl");
+        var $chicken = $stage.find(".chicken-bowl");
+
+        if (!$pan.length || !$sauce.length || !$chicken.length) {
+            return;
+        }
+
+        var sauceDone = false;
+        var chickenDone = false;
+
+        function maybeSwapPan() {
+            if (sauceDone && chickenDone) {
+                $pan
+                    .attr("src", SPRITES + "full-pan.png")
+                    .attr("data-state", "full")
+                    .removeClass("cooking");
+                initTossSaucePhase();
+            }
+        }
+
+        var sauceOverlapping = false;
+        var sauceTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                sauceDone = true;
+                $sauce.attr("src", SPRITES + "still-sauce-bowl.png");
+                try {
+                    $sauce.draggable("disable");
+                } catch (e) {}
+                $sauce.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                if (!chickenDone) {
+                    $pan.removeClass("cooking");
+                }
+                $('.lesson-checkbox[data-task-id="pour-sauce"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+                maybeSwapPan();
+            }
+        });
+
+        function checkSauceOverlap() {
+            if (sauceDone) {
+                return;
+            }
+            var sEl = $sauce.get(0);
+            var pEl = $pan.get(0);
+            if (!sEl || !pEl) {
+                return;
+            }
+            var nowOver = rectsOverlap(
+                sEl.getBoundingClientRect(),
+                pEl.getBoundingClientRect()
+            );
+            if (nowOver && !sauceOverlapping) {
+                sauceOverlapping = true;
+                $sauce.attr("src", SPRITES + "pouring-sauce-bowl.png");
+                $pan.addClass("cooking");
+                sauceTimer.start();
+            } else if (!nowOver && sauceOverlapping) {
+                sauceOverlapping = false;
+                $sauce.attr("src", SPRITES + "still-sauce-bowl.png");
+                if (!chickenOverlapping) {
+                    $pan.removeClass("cooking");
+                }
+                sauceTimer.stop();
+            }
+        }
+
+        $sauce.draggable({
+            containment: "#sauce-pour-stage",
+            drag: checkSauceOverlap,
+            stop: function () {
+                if (!sauceDone && sauceOverlapping) {
+                    sauceOverlapping = false;
+                    $sauce.attr("src", SPRITES + "still-sauce-bowl.png");
+                    if (!chickenOverlapping) {
+                        $pan.removeClass("cooking");
+                    }
+                    sauceTimer.stop();
+                }
+            }
+        });
+
+        var chickenOverlapping = false;
+        var chickenTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                chickenDone = true;
+                try {
+                    $chicken.draggable("disable");
+                } catch (e) {}
+                $chicken.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                if (!sauceDone) {
+                    $pan.removeClass("cooking");
+                }
+                maybeSwapPan();
+            }
+        });
+
+        function checkChickenOverlap() {
+            if (chickenDone) {
+                return;
+            }
+            var cEl = $chicken.get(0);
+            var pEl = $pan.get(0);
+            if (!cEl || !pEl) {
+                return;
+            }
+            var nowOver = rectsOverlap(
+                cEl.getBoundingClientRect(),
+                pEl.getBoundingClientRect()
+            );
+            if (nowOver && !chickenOverlapping) {
+                chickenOverlapping = true;
+                $pan.addClass("cooking");
+                chickenTimer.start();
+            } else if (!nowOver && chickenOverlapping) {
+                chickenOverlapping = false;
+                if (!sauceOverlapping) {
+                    $pan.removeClass("cooking");
+                }
+                chickenTimer.stop();
+            }
+        }
+
+        $chicken.draggable({
+            containment: "#sauce-pour-stage",
+            drag: checkChickenOverlap,
+            stop: function () {
+                if (!chickenDone && chickenOverlapping) {
+                    chickenOverlapping = false;
+                    if (!sauceOverlapping) {
+                        $pan.removeClass("cooking");
+                    }
+                    chickenTimer.stop();
+                }
+            }
+        });
+    }
+
+    function initTossSaucePhase() {
+        var $stage = $("#sauce-pour-stage");
+        var $pan = $stage.find(".pan");
+        var $progress = $("#heat-progress");
+        var $bar = $progress.find(".bar");
+
+        if (!$pan.length) {
+            return;
+        }
+
+        var STIR_TARGET_MS = 6000;
+        var MIN_DISTANCE = 5;
+        var MAX_DT = 150;
+        var IDLE_HIDE_MS = 200;
+
+        var stirMs = 0;
+        var lastX = null;
+        var lastY = null;
+        var lastT = 0;
+        var idleTimeoutId = null;
+        var stirCompleted = false;
+
+        function updateBar() {
+            var pct = Math.min(100, (stirMs / STIR_TARGET_MS) * 100);
+            $bar.css("width", pct + "%");
+        }
+
+        function clearIdleTimeout() {
+            if (idleTimeoutId !== null) {
+                clearTimeout(idleTimeoutId);
+                idleTimeoutId = null;
+            }
+        }
+
+        function scheduleIdle() {
+            clearIdleTimeout();
+            idleTimeoutId = setTimeout(function () {
+                $pan.removeClass("stirring");
+            }, IDLE_HIDE_MS);
+        }
+
+        function completeStir() {
+            stirCompleted = true;
+            clearIdleTimeout();
+            $pan.removeClass("stirring");
+            try {
+                $pan.draggable("disable");
+            } catch (e) {}
+            $progress.removeClass("visible");
+            $bar.css("width", "0%");
+            $('.lesson-checkbox[data-task-id="toss-sauce"]')
+                .prop("checked", true)
+                .addClass("done")
+                .trigger("change");
+        }
+
+        $pan.draggable({
+            containment: "#sauce-pour-stage",
+            start: function (event) {
+                if (stirCompleted) {
+                    return;
+                }
+                lastX = event.pageX;
+                lastY = event.pageY;
+                lastT = performance.now();
+                $progress.addClass("visible");
+                $pan.addClass("stirring");
+                updateBar();
+            },
+            drag: function (event) {
+                if (stirCompleted) {
+                    return;
+                }
+                var now = performance.now();
+                var dt = now - lastT;
+                var dx = event.pageX - lastX;
+                var dy = event.pageY - lastY;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist >= MIN_DISTANCE && dt > 0 && dt <= MAX_DT) {
+                    stirMs += dt;
+                    $pan.addClass("stirring");
+                    scheduleIdle();
+                    updateBar();
+                    if (stirMs >= STIR_TARGET_MS) {
+                        completeStir();
+                    }
+                }
+
+                lastX = event.pageX;
+                lastY = event.pageY;
+                lastT = now;
+            },
+            stop: function () {
+                clearIdleTimeout();
+                if (!stirCompleted) {
+                    $pan.removeClass("stirring");
+                }
+            }
+        });
+    }
+
     function renderLesson() {
         var $payload = $("#lesson-data");
         if (!$payload.length) {
@@ -1043,6 +1432,11 @@
                 '<section class="lesson-game">' +
                 buildAromaticsStage() +
                 "</section>";
+        } else if (lesson.minigame === "make-sauce") {
+            gameHtml =
+                '<section class="lesson-game">' +
+                buildSauceMixStage() +
+                "</section>";
         }
 
         var html =
@@ -1061,6 +1455,8 @@
             initHeatOilLesson();
         } else if (lesson.minigame === "cook-aromatics") {
             initCookAromaticsLesson();
+        } else if (lesson.minigame === "make-sauce") {
+            initMakeSauceLesson();
         }
     }
 

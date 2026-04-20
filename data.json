@@ -29,5 +29,15 @@
       { "text": "Add dried chilies, minced garlic, and sliced ginger", "auto": true, "id": "add-spices" },
       { "text": "Stir fry for about 30 seconds until fragrant", "auto": true, "id": "stir-fry" }
     ]
+  },
+  "4": {
+    "step_heading": "Step 4: Make the Sauce",
+    "instructions_label": "Instructions:",
+    "minigame": "make-sauce",
+    "tasks": [
+      { "text": "Mix the sauce in a bowl: 3 tbsp soy sauce, 3 tbsp rice vinegar, 3 tbsp sugar, 2 tbsp orange juice (from those orange slices), 1 tsp sesame oil", "auto": true, "id": "mix-sauce" },
+      { "text": "Pour sauce into the wok with the aromatics and bring to a simmer", "auto": true, "id": "pour-sauce" },
+      { "text": "Toss the fried chicken back into the wok and stir until every piece is coated", "auto": true, "id": "toss-sauce" }
+    ]
   }
 }
