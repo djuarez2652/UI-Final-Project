@@ -335,6 +335,61 @@
     cursor: grabbing;
 }
 
+.stove-stage .coated-bowl {
+    position: absolute;
+    left: 5%;
+    top: 58%;
+    width: 22%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.stove-stage .coated-bowl.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.stove-stage .pan.cooking {
+    animation: chop-shake 0.26s steps(2) infinite;
+    transform-origin: center center;
+}
+
+.stove-stage .spoon {
+    position: absolute;
+    left: 4%;
+    top: 56%;
+    width: 28%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: grab;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.stove-stage .spoon.ui-draggable-dragging {
+    cursor: grabbing;
+}
+
+.stove-stage .serve-bowl {
+    position: absolute;
+    left: 50%;
+    top: 18%;
+    transform: translateX(-50%);
+    width: 18%;
+    height: auto;
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.stove-stage .coated-bowl[hidden],
+.stove-stage .spoon[hidden],
+.stove-stage .serve-bowl[hidden] {
+    display: none;
+}
+
 #heat-progress {
     position: absolute;
     left: 36%;

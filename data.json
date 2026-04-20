@@ -14,7 +14,10 @@
     "instructions_label": "Instructions:",
     "minigame": "heat-oil",
     "tasks": [
-      { "text": "Heat about 2 cups of vegetable oil in the wok to 350\u00b0F (medium-high heat)", "auto": true, "id": "heat-oil" }
+      { "text": "Heat about 2 cups of vegetable oil in the wok to 350\u00b0F (medium-high heat)", "auto": true, "id": "heat-oil" },
+      { "text": "Carefully drop coated chicken pieces into the hot oil in small batches \u2014 don't crowd the wok", "auto": true, "id": "fry-drop" },
+      { "text": "Fry for 3-4 minutes per batch until golden brown and cooked through", "auto": true, "id": "fry-cook" },
+      { "text": "Remove with chopsticks or a slotted spoon and set aside in a bowl", "auto": true, "id": "fry-transfer" }
     ]
   }
 }

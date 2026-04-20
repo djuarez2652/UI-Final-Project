@@ -95,6 +95,12 @@
             '<div id="heat-progress"><div class="bar"></div></div>' +
             '<img class="oil-bottle" data-state="still" alt="vegetable oil"' +
             ' src="' + SPRITES + 'still-vegetable-oil.png">' +
+            '<img class="coated-bowl" alt="coated chicken bowl" hidden' +
+            ' src="' + SPRITES + 'cornstarch-chicken-bowl.png">' +
+            '<img class="spoon" data-state="empty" alt="slotted spoon" hidden' +
+            ' src="' + SPRITES + 'slotted-spoon-empty.png">' +
+            '<img class="serve-bowl" data-state="empty" alt="serving bowl" hidden' +
+            ' src="' + SPRITES + 'empty-bowl.png">' +
             "</div>"
         );
     }
@@ -114,6 +120,7 @@
      */
     function createHoldTimer(opts) {
         var progressSelector = (opts && opts.progressSelector) || "#cut-progress";
+        var holdMs = (opts && opts.holdMs) || HOLD_MS;
         var $progress = $(progressSelector);
         var $bar = $progress.find(".bar");
         var rafId = null;
@@ -136,9 +143,9 @@
                 return;
             }
             var elapsed = now - holdStart;
-            var pct = Math.min(100, (elapsed / HOLD_MS) * 100);
+            var pct = Math.min(100, (elapsed / holdMs) * 100);
             $bar.css("width", pct + "%");
-            if (elapsed >= HOLD_MS) {
+            if (elapsed >= holdMs) {
                 var done = opts.onComplete;
                 reset();
                 if (typeof done === "function") {
@@ -537,6 +544,7 @@
                     .prop("checked", true)
                     .addClass("done")
                     .trigger("change");
+                initDropCoatedPhase();
             }
         });
 
@@ -573,6 +581,204 @@
                     setOilState("still");
                     $pan.removeClass("heating");
                     holdTimer.stop();
+                }
+            }
+        });
+    }
+
+    function initDropCoatedPhase() {
+        var $stage = $("#stove-stage");
+        var $pan = $stage.find(".pan");
+        var $coated = $stage.find(".coated-bowl");
+
+        if (!$coated.length || !$pan.length) {
+            return;
+        }
+
+        $coated.removeAttr("hidden").hide().fadeIn(250);
+
+        var dropCompleted = false;
+
+        var holdTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            onComplete: function () {
+                dropCompleted = true;
+                $pan
+                    .attr("src", SPRITES + "raw-chicken-oil-pan.png")
+                    .attr("data-state", "raw")
+                    .removeClass("cooking");
+                try {
+                    $coated.draggable("disable");
+                } catch (e) {}
+                $coated.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                $('.lesson-checkbox[data-task-id="fry-drop"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+                initCookPhase();
+            }
+        });
+
+        function checkOverlap() {
+            if (dropCompleted) {
+                return;
+            }
+            var cEl = $coated.get(0);
+            var pEl = $pan.get(0);
+            if (!cEl || !pEl) {
+                return;
+            }
+            if (rectsOverlap(cEl.getBoundingClientRect(), pEl.getBoundingClientRect())) {
+                if (!holdTimer.isActive()) {
+                    $pan.addClass("cooking");
+                    holdTimer.start();
+                }
+            } else if (holdTimer.isActive()) {
+                $pan.removeClass("cooking");
+                holdTimer.stop();
+            }
+        }
+
+        $coated.draggable({
+            containment: "#stove-stage",
+            drag: checkOverlap,
+            stop: function () {
+                if (!dropCompleted) {
+                    $pan.removeClass("cooking");
+                    holdTimer.stop();
+                }
+            }
+        });
+    }
+
+    function initCookPhase() {
+        var $stage = $("#stove-stage");
+        var $pan = $stage.find(".pan");
+
+        if (!$pan.length) {
+            return;
+        }
+
+        $pan.addClass("cooking");
+
+        var cookTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            holdMs: 6000,
+            onComplete: function () {
+                $pan
+                    .attr("src", SPRITES + "cooked-chicken-oil-pan.png")
+                    .attr("data-state", "cooked")
+                    .removeClass("cooking");
+                $('.lesson-checkbox[data-task-id="fry-cook"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+                initTransferPhase();
+            }
+        });
+
+        cookTimer.start();
+    }
+
+    function initTransferPhase() {
+        var $stage = $("#stove-stage");
+        var $pan = $stage.find(".pan");
+        var $spoon = $stage.find(".spoon");
+        var $serveBowl = $stage.find(".serve-bowl");
+
+        if (!$spoon.length || !$serveBowl.length) {
+            return;
+        }
+
+        $spoon.removeAttr("hidden").hide().fadeIn(250);
+        $serveBowl.removeAttr("hidden").hide().fadeIn(250);
+
+        var pickedUp = false;
+        var delivered = false;
+
+        var pickupTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            holdMs: 1000,
+            onComplete: function () {
+                pickedUp = true;
+                $spoon
+                    .attr("src", SPRITES + "fried-chicken-slotted-spoon.png")
+                    .attr("data-state", "loaded");
+                $pan
+                    .attr("src", SPRITES + "bubbling-oil-pan.png")
+                    .attr("data-state", "hot");
+            }
+        });
+
+        var dropTimer = createHoldTimer({
+            progressSelector: "#heat-progress",
+            holdMs: 1000,
+            onComplete: function () {
+                delivered = true;
+                $serveBowl
+                    .attr("src", SPRITES + "little-fried-chicken-bowl.png")
+                    .attr("data-state", "full");
+                try {
+                    $spoon.draggable("disable");
+                } catch (e) {}
+                $spoon.fadeOut(200, function () {
+                    $(this).remove();
+                });
+                $('.lesson-checkbox[data-task-id="fry-transfer"]')
+                    .prop("checked", true)
+                    .addClass("done")
+                    .trigger("change");
+            }
+        });
+
+        function checkOverlap() {
+            if (delivered) {
+                return;
+            }
+            var spoonEl = $spoon.get(0);
+            if (!spoonEl) {
+                return;
+            }
+            var spoonRect = spoonEl.getBoundingClientRect();
+
+            if (!pickedUp) {
+                var panEl = $pan.get(0);
+                if (!panEl) {
+                    return;
+                }
+                if (rectsOverlap(spoonRect, panEl.getBoundingClientRect())) {
+                    if (!pickupTimer.isActive()) {
+                        pickupTimer.start();
+                    }
+                } else if (pickupTimer.isActive()) {
+                    pickupTimer.stop();
+                }
+                return;
+            }
+
+            var bowlEl = $serveBowl.get(0);
+            if (!bowlEl) {
+                return;
+            }
+            if (rectsOverlap(spoonRect, bowlEl.getBoundingClientRect())) {
+                if (!dropTimer.isActive()) {
+                    dropTimer.start();
+                }
+            } else if (dropTimer.isActive()) {
+                dropTimer.stop();
+            }
+        }
+
+        $spoon.draggable({
+            containment: "#stove-stage",
+            drag: checkOverlap,
+            stop: function () {
+                if (!pickedUp) {
+                    pickupTimer.stop();
+                } else if (!delivered) {
+                    dropTimer.stop();
                 }
             }
         });
