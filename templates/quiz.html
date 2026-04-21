@@ -3,8 +3,9 @@
 {% block title %}Quiz{% endblock %}
 
 {% block content %}
-<main class="container text-center page-main">
-    <h1 class="page-title mb-4">Quiz</h1>
-    <p class="page-lead">Quiz coming soon.</p>
-</main>
+<div id="quiz-root" class="quiz-root"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='quiz.js') }}"></script>
 {% endblock %}

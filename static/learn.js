@@ -1559,6 +1559,7 @@
                 .prop("checked", true)
                 .addClass("done")
                 .trigger("change");
+            window.location.href = "/quiz";
         });
     }
 
@@ -1583,6 +1584,11 @@
         var rawTasks = lesson.tasks || [];
         var tasks = $.map(rawTasks, normalizeTask);
 
+        var nextHref = Number(lessonId) >= 5
+            ? "/quiz"
+            : "/learn/" + (Number(lessonId) + 1);
+        var nextLabel = Number(lessonId) >= 5 ? "Take the Quiz" : "Continue";
+
         var sideHtml =
             '<aside class="lesson-side">' +
             '<h1 class="lesson-step-title">' +
@@ -1593,9 +1599,9 @@
             "</h2>" +
             buildTaskList(tasks, lessonId) +
             '<div class="lesson-continue-wrap is-hidden">' +
-            '<a class="btn btn-continue" href="/learn/' +
-            (Number(lessonId) + 1) +
-            '">Continue</a>' +
+            '<a class="btn btn-continue" href="' + nextHref + '">' +
+            nextLabel +
+            '</a>' +
             "</div>" +
             "</aside>";
 
