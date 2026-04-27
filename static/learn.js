@@ -29,7 +29,9 @@
             var disabledAttr = task.auto ? " disabled" : "";
             var labelClass = "lesson-task-label" + (task.auto ? " disabled" : "");
             return (
-                '<li class="lesson-task">' +
+                '<li class="lesson-task" tabindex="0" role="button"' +
+                ' aria-label="Save instruction to notebook"' +
+                ' data-note-text="' + escapeHtml(task.text) + '">' +
                 '<input type="checkbox" class="lesson-checkbox"' +
                 disabledAttr +
                 ' id="' + domId + '"' +
@@ -38,11 +40,21 @@
                 '<label class="' + labelClass + '" for="' + domId + '">' +
                 escapeHtml(task.text) +
                 "</label>" +
+                '<span class="lesson-task-hint" aria-hidden="true">+ note</span>' +
                 "</li>"
             );
         }).join("");
 
         return '<ul class="list-unstyled lesson-task-list mb-0">' + items + "</ul>";
+    }
+
+    function buildNotebookTrigger() {
+        var icon = (window.Notebook && window.Notebook.bookIconHtml) || "";
+        return (
+            '<button type="button" class="notebook-trigger" aria-label="Open notebook">' +
+                icon +
+            "</button>"
+        );
     }
 
     function updateContinueVisibility() {
@@ -1563,6 +1575,75 @@
         });
     }
 
+    function buildTutorial() {
+        var cards = [
+            {
+                title: "Drag & Hold",
+                body: "Drag a tool onto its target and hold steady until the bar fills.",
+                demo:
+                    '<div class="tut-demo tut-demo-drag">' +
+                        '<img class="tut-target" alt="" src="' + SPRITES + 'chicken-precut.png">' +
+                        '<img class="tut-tool tut-knife" alt="" src="' + SPRITES + 'knife.png">' +
+                        '<div class="tut-progress"><div class="bar"></div></div>' +
+                    '</div>'
+            },
+            {
+                title: "Shake & Stir",
+                body: "Some steps need motion — wiggle the item back and forth to fill the bar.",
+                demo:
+                    '<div class="tut-demo tut-demo-stir">' +
+                        '<img class="tut-tool tut-pan" alt="" src="' + SPRITES + 'cooked-chicken-oil-pan.png">' +
+                        '<div class="tut-progress"><div class="bar"></div></div>' +
+                    '</div>'
+            },
+            {
+                title: "Click to Act",
+                body: "When a button appears, click it to take the action and finish the step.",
+                demo:
+                    '<div class="tut-demo tut-demo-click">' +
+                        '<button type="button" class="tut-fake-btn" tabindex="-1" aria-hidden="true">Serve</button>' +
+                    '</div>'
+            },
+            {
+                title: "Save Notes",
+                body: "Click any instruction to save it to your notebook for the quiz.",
+                demo:
+                    '<div class="tut-demo tut-demo-note">' +
+                        '<div class="tut-mock-task">' +
+                            '<span class="tut-mock-checkbox"></span>' +
+                            '<span class="tut-mock-text">Heat oil to 350&deg;F</span>' +
+                            '<span class="tut-mock-hint">+ note</span>' +
+                        '</div>' +
+                        '<div class="tut-mock-book">' +
+                            ((window.Notebook && window.Notebook.bookIconHtml) || "") +
+                        '</div>' +
+                    '</div>'
+            }
+        ];
+
+        var cardHtml = $.map(cards, function (c) {
+            return (
+                '<article class="tutorial-card">' +
+                    c.demo +
+                    '<h3 class="tutorial-card-title">' + escapeHtml(c.title) + '</h3>' +
+                    '<p class="tutorial-card-body">' + escapeHtml(c.body) + '</p>' +
+                '</article>'
+            );
+        }).join("");
+
+        return (
+            '<section class="tutorial-page">' +
+                '<h1 class="tutorial-title">How to Play</h1>' +
+                '<p class="tutorial-lead">Three moves are all you need to cook through every step.</p>' +
+                '<div class="tutorial-grid">' + cardHtml + '</div>' +
+                '<p class="tutorial-tip">Tip: click an instruction to save it to your notebook.</p>' +
+                '<div class="tutorial-actions">' +
+                    '<a class="btn btn-continue" href="/learn/1">Start Cooking</a>' +
+                '</div>' +
+            '</section>'
+        );
+    }
+
     function renderLesson() {
         var $payload = $("#lesson-data");
         if (!$payload.length) {
@@ -1578,6 +1659,20 @@
 
         var lessonId = $("#lesson-root").data("lesson-id");
         if (lessonId === undefined || lessonId === null) {
+            return;
+        }
+
+        if (lesson.minigame === "tutorial") {
+            $("#lesson-root").html(buildTutorial());
+            if (!$(".notebook-trigger").length) {
+                $("body").append(buildNotebookTrigger());
+            }
+            if (window.Notebook) window.Notebook.render();
+            $(document)
+                .off("click.notebooktrigger")
+                .on("click.notebooktrigger", ".notebook-trigger", function () {
+                    if (window.Notebook) window.Notebook.toggle();
+                });
             return;
         }
 
@@ -1638,9 +1733,41 @@
 
         $("#lesson-root").html(html);
 
+        if (!$(".notebook-trigger").length) {
+            $("body").append(buildNotebookTrigger());
+        }
+        if (window.Notebook) {
+            window.Notebook.render();
+        }
+
         $("#lesson-root")
-            .off("change.lesson")
-            .on("change.lesson", ".lesson-checkbox", updateContinueVisibility);
+            .off("change.lesson click.notebook")
+            .on("change.lesson", ".lesson-checkbox", updateContinueVisibility)
+            .on("click.notebook", ".lesson-task-label", function (e) {
+                e.preventDefault();
+                var $task = $(this).closest(".lesson-task");
+                var text = $task.attr("data-note-text") || $task.find(".lesson-task-label").text();
+                if (!window.Notebook) return;
+                var added = window.Notebook.add(text);
+                $task
+                    .removeClass("just-saved already-saved")
+                    .addClass(added ? "just-saved" : "already-saved");
+                setTimeout(function () {
+                    $task.removeClass("just-saved already-saved");
+                }, 700);
+            })
+            .on("keydown.notebook", ".lesson-task", function (e) {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                $(this).find(".lesson-task-label").trigger("click");
+            });
+
+        $(document)
+            .off("click.notebooktrigger")
+            .on("click.notebooktrigger", ".notebook-trigger", function () {
+                if (window.Notebook) window.Notebook.toggle();
+            });
+
         updateContinueVisibility();
 
         if (lesson.minigame === "cut-chicken") {

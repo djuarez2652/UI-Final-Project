@@ -1413,3 +1413,629 @@ body.is-quiz .site-nav {
 .report-home:hover {
     background-color: #b6762d;
 }
+
+/* ===========================================================
+   Notebook
+   =========================================================== */
+
+.lesson-task {
+    position: relative;
+    padding: 0.45rem 4.5rem 0.45rem 0.6rem;
+    border: 2px solid transparent;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease,
+        box-shadow 0.05s ease, transform 0.05s ease;
+}
+
+.lesson-task:hover,
+.lesson-task:focus-visible {
+    background-color: #fff3b0;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    outline: none;
+}
+
+.lesson-task:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+.lesson-task.just-saved {
+    background-color: #c8e6a0;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.lesson-task.already-saved {
+    background-color: #ffe0a3;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.lesson-task-hint {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.4rem;
+    color: var(--pixel-black);
+    background-color: #ffffff;
+    border: 2px solid var(--pixel-black);
+    padding: 0.3rem 0.4rem;
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.lesson-task:hover .lesson-task-hint,
+.lesson-task:focus-visible .lesson-task-hint {
+    opacity: 1;
+}
+
+.lesson-task.just-saved .lesson-task-hint,
+.lesson-task.already-saved .lesson-task-hint {
+    opacity: 1;
+}
+
+.lesson-task.just-saved .lesson-task-hint::after {
+    content: "saved!";
+    position: absolute;
+    inset: 0;
+    background: #c8e6a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lesson-task.already-saved .lesson-task-hint::after {
+    content: "already saved";
+    position: absolute;
+    inset: 0;
+    background: #ffe0a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notebook-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    image-rendering: pixelated;
+    display: block;
+}
+
+.notebook-trigger {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 3rem;
+    height: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    cursor: pointer;
+    z-index: 90;
+    transition: transform 0.05s ease, box-shadow 0.05s ease,
+        background-color 0.1s ease;
+}
+
+.notebook-trigger:hover {
+    background-color: var(--quiz-yellow, #ffd93b);
+}
+
+.notebook-trigger:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+.notebook-trigger:focus-visible {
+    outline: 3px solid var(--pixel-black);
+    outline-offset: 3px;
+}
+
+.notebook-trigger .notebook-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+}
+
+.quiz-notebook-btn {
+    position: absolute;
+    top: 1rem;
+    right: 4.4rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.05s ease, box-shadow 0.05s ease,
+        background-color 0.1s ease;
+}
+
+.quiz-notebook-btn:hover {
+    background: var(--quiz-yellow);
+}
+
+.quiz-notebook-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.quiz-notebook-btn .notebook-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.notebook-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1100;
+}
+
+.notebook-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(92vw, 28rem);
+    max-height: min(80vh, 32rem);
+    display: flex;
+    flex-direction: column;
+    background: #fff8e7;
+    border: 4px solid var(--pixel-black);
+    box-shadow: 6px 6px 0 var(--pixel-black);
+    z-index: 1101;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    color: var(--pixel-black);
+    image-rendering: pixelated;
+}
+
+.notebook-panel[hidden] {
+    display: none;
+}
+
+.notebook-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 3px solid var(--pixel-black);
+    background: #f3e3b8;
+}
+
+.notebook-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+}
+
+.notebook-close {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.65rem;
+    color: var(--pixel-black);
+    cursor: pointer;
+}
+
+.notebook-close:hover {
+    background: var(--quiz-yellow);
+}
+
+.notebook-close:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.notebook-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.notebook-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem 0.7rem;
+    margin-bottom: 0.6rem;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.notebook-item:last-child {
+    margin-bottom: 0;
+}
+
+.notebook-text {
+    flex: 1 1 auto;
+    font-size: 0.45rem;
+    line-height: 1.9;
+    word-break: break-word;
+}
+
+.notebook-delete {
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.55rem;
+    color: var(--pixel-black);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.notebook-delete:hover {
+    background: #ff6b6b;
+    color: #ffffff;
+}
+
+.notebook-delete:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.notebook-empty {
+    margin: 0;
+    padding: 1.25rem 1rem 1.5rem;
+    font-size: 0.5rem;
+    line-height: 1.9;
+    text-align: center;
+}
+
+body.is-quiz .notebook-trigger {
+    display: none;
+}
+
+/* ===========================================================
+   Tutorial (lesson 0)
+   =========================================================== */
+
+.tutorial-page {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+    text-align: center;
+    image-rendering: pixelated;
+}
+
+.tutorial-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.75rem, 2.4vw, 1rem);
+    line-height: 1.6;
+    color: var(--pixel-black);
+    margin-bottom: 1rem;
+}
+
+.tutorial-lead {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.45rem, 1.4vw, 0.6rem);
+    line-height: 2;
+    color: var(--pixel-black);
+    margin-bottom: 2.5rem;
+}
+
+.tutorial-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.25rem;
+}
+
+@media (min-width: 768px) {
+    .tutorial-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1100px) {
+    .tutorial-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.tutorial-card {
+    background: #fff8e7;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    padding: 1.25rem 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.tutorial-card-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.65rem;
+    color: var(--pixel-black);
+    margin: 0.25rem 0 0.85rem;
+}
+
+.tutorial-card-body {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.42rem;
+    line-height: 2;
+    color: var(--pixel-black);
+    margin: 0;
+}
+
+.tut-demo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    background: #ede2c4;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    image-rendering: pixelated;
+}
+
+.tut-progress {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 10%;
+    height: 0.7rem;
+    border: 2px solid var(--pixel-black);
+    background: #ffffff;
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    overflow: hidden;
+}
+
+.tut-progress .bar {
+    height: 100%;
+    width: 0%;
+    background: #2d8f47;
+}
+
+.tut-demo-drag .tut-target {
+    position: absolute;
+    width: 32%;
+    left: 22%;
+    top: 22%;
+    image-rendering: pixelated;
+}
+
+.tut-demo-drag .tut-knife {
+    position: absolute;
+    width: 30%;
+    left: 56%;
+    top: 30%;
+    image-rendering: pixelated;
+    animation: tut-knife-move 3.6s ease-in-out infinite;
+}
+
+.tut-demo-drag .tut-progress .bar {
+    animation: tut-bar-fill 3.6s ease-in-out infinite;
+}
+
+@keyframes tut-knife-move {
+    0%, 8% { transform: translate(0, 0); }
+    25%, 65% { transform: translate(-50%, -10%); }
+    82%, 100% { transform: translate(0, 0); }
+}
+
+@keyframes tut-bar-fill {
+    0%, 22% { width: 0%; }
+    62%, 70% { width: 100%; }
+    72%, 100% { width: 0%; }
+}
+
+.tut-demo-stir .tut-pan {
+    position: absolute;
+    width: 60%;
+    left: 20%;
+    top: 18%;
+    image-rendering: pixelated;
+    animation: tut-stir 0.55s ease-in-out infinite;
+    transform-origin: 50% 60%;
+}
+
+.tut-demo-stir .tut-progress .bar {
+    animation: tut-bar-stir 3.2s linear infinite;
+}
+
+@keyframes tut-stir {
+    0%, 100% { transform: translateX(-6%) rotate(-3deg); }
+    50% { transform: translateX(6%) rotate(3deg); }
+}
+
+@keyframes tut-bar-stir {
+    0% { width: 0%; }
+    85%, 100% { width: 100%; }
+}
+
+.tut-demo-click {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tut-fake-btn {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.65rem;
+    color: #ffffff;
+    background-color: #2d8f47;
+    border: 3px solid var(--pixel-black);
+    border-radius: 0;
+    padding: 0.85rem 1.5rem;
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    cursor: default;
+    pointer-events: none;
+    animation: tut-click-pulse 1.6s ease-in-out infinite;
+    transform-origin: center center;
+}
+
+@keyframes tut-click-pulse {
+    0%, 60%, 100% { transform: scale(1); }
+    70% { transform: scale(1.08) translate(2px, 2px); box-shadow: 2px 2px 0 var(--pixel-black); }
+    80% { transform: scale(1); box-shadow: 4px 4px 0 var(--pixel-black); }
+}
+
+.tut-demo-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    gap: 0.7rem;
+}
+
+.tut-mock-task {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.45rem 0.55rem;
+    background: #ffffff;
+    border: 2px solid transparent;
+    box-shadow: none;
+    animation: tut-note-row 4s ease-in-out infinite;
+}
+
+.tut-mock-checkbox {
+    flex-shrink: 0;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 2px solid var(--pixel-black);
+    background: #ffffff;
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.tut-mock-text {
+    flex: 1 1 auto;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.42rem;
+    line-height: 1.6;
+    color: var(--pixel-black);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tut-mock-hint {
+    flex-shrink: 0;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.32rem;
+    color: var(--pixel-black);
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    padding: 0.2rem 0.3rem;
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    opacity: 0;
+    animation: tut-note-hint 4s ease-in-out infinite;
+}
+
+.tut-mock-book {
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    animation: tut-note-book 4s ease-in-out infinite;
+}
+
+.tut-mock-book .notebook-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+@keyframes tut-note-row {
+    0%, 12% {
+        background: #ffffff;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    25%, 50% {
+        background: #fff3b0;
+        border-color: var(--pixel-black);
+        box-shadow: 3px 3px 0 var(--pixel-black);
+    }
+    60%, 75% {
+        background: #c8e6a0;
+        border-color: var(--pixel-black);
+        box-shadow: 3px 3px 0 var(--pixel-black);
+    }
+    88%, 100% {
+        background: #ffffff;
+        border-color: transparent;
+        box-shadow: none;
+    }
+}
+
+@keyframes tut-note-hint {
+    0%, 18% { opacity: 0; }
+    25%, 75% { opacity: 1; }
+    85%, 100% { opacity: 0; }
+}
+
+@keyframes tut-note-book {
+    0%, 55% { transform: scale(1); background: #ffffff; }
+    62%, 72% { transform: scale(1.15); background: #fff3b0; }
+    82%, 100% { transform: scale(1); background: #ffffff; }
+}
+
+.tutorial-tip {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.45rem;
+    line-height: 2;
+    color: var(--pixel-black);
+    margin: 0 0 1.5rem;
+}
+
+.tutorial-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+}
+
+.btn-tutorial-skip {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.4rem, 1.3vw, 0.55rem);
+    color: var(--pixel-black);
+    text-decoration: underline;
+    text-underline-offset: 0.35rem;
+}
+
+.btn-tutorial-skip:hover,
+.btn-tutorial-skip:focus {
+    color: var(--pixel-black);
+    opacity: 0.7;
+}

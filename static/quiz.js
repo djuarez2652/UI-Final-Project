@@ -27,8 +27,17 @@
         $("#quiz-root").empty();
     }
 
-    function exitButton() {
-        return '<a href="/" class="quiz-exit" aria-label="Exit quiz">X</a>';
+    function exitButton(opts) {
+        var includeNotebook = !opts || opts.notebook !== false;
+        var bookIcon = (window.Notebook && window.Notebook.bookIconHtml) || "";
+        var notebookHtml = includeNotebook
+            ? (
+                '<button type="button" class="quiz-notebook-btn" aria-label="Open notebook">' +
+                    bookIcon +
+                '</button>'
+              )
+            : "";
+        return notebookHtml + '<a href="/" class="quiz-exit" aria-label="Exit quiz">X</a>';
     }
 
     /* ---------- Intro ---------- */
@@ -37,7 +46,7 @@
         clearRoot();
         var html =
             '<section class="quiz-intro">' +
-            exitButton() +
+            exitButton({ notebook: false }) +
             '<div class="quiz-intro-inner">' +
             '<h1 class="quiz-intro-title">Quiz</h1>' +
             '<div class="quiz-intro-rule"></div>' +
@@ -564,5 +573,12 @@
     $(function () {
         $("body").addClass("is-quiz");
         renderIntro();
+        $(document)
+            .off("click.quiznotebook")
+            .on("click.quiznotebook", ".quiz-notebook-btn", function (e) {
+                e.preventDefault();
+                if (window.Notebook) window.Notebook.toggle();
+            });
+        if (window.Notebook) window.Notebook.render();
     });
 })(jQuery);
