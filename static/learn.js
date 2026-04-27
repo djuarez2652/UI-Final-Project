@@ -29,7 +29,9 @@
             var disabledAttr = task.auto ? " disabled" : "";
             var labelClass = "lesson-task-label" + (task.auto ? " disabled" : "");
             return (
-                '<li class="lesson-task">' +
+                '<li class="lesson-task" tabindex="0" role="button"' +
+                ' aria-label="Save instruction to notebook"' +
+                ' data-note-text="' + escapeHtml(task.text) + '">' +
                 '<input type="checkbox" class="lesson-checkbox"' +
                 disabledAttr +
                 ' id="' + domId + '"' +
@@ -38,11 +40,21 @@
                 '<label class="' + labelClass + '" for="' + domId + '">' +
                 escapeHtml(task.text) +
                 "</label>" +
+                '<span class="lesson-task-hint" aria-hidden="true">+ note</span>' +
                 "</li>"
             );
         }).join("");
 
         return '<ul class="list-unstyled lesson-task-list mb-0">' + items + "</ul>";
+    }
+
+    function buildNotebookTrigger() {
+        var icon = (window.Notebook && window.Notebook.bookIconHtml) || "";
+        return (
+            '<button type="button" class="notebook-trigger" aria-label="Open notebook">' +
+                icon +
+            "</button>"
+        );
     }
 
     function updateContinueVisibility() {
@@ -1638,9 +1650,41 @@
 
         $("#lesson-root").html(html);
 
+        if (!$(".notebook-trigger").length) {
+            $("body").append(buildNotebookTrigger());
+        }
+        if (window.Notebook) {
+            window.Notebook.render();
+        }
+
         $("#lesson-root")
-            .off("change.lesson")
-            .on("change.lesson", ".lesson-checkbox", updateContinueVisibility);
+            .off("change.lesson click.notebook")
+            .on("change.lesson", ".lesson-checkbox", updateContinueVisibility)
+            .on("click.notebook", ".lesson-task-label", function (e) {
+                e.preventDefault();
+                var $task = $(this).closest(".lesson-task");
+                var text = $task.attr("data-note-text") || $task.find(".lesson-task-label").text();
+                if (!window.Notebook) return;
+                var added = window.Notebook.add(text);
+                $task
+                    .removeClass("just-saved already-saved")
+                    .addClass(added ? "just-saved" : "already-saved");
+                setTimeout(function () {
+                    $task.removeClass("just-saved already-saved");
+                }, 700);
+            })
+            .on("keydown.notebook", ".lesson-task", function (e) {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                $(this).find(".lesson-task-label").trigger("click");
+            });
+
+        $(document)
+            .off("click.notebooktrigger")
+            .on("click.notebooktrigger", ".notebook-trigger", function () {
+                if (window.Notebook) window.Notebook.toggle();
+            });
+
         updateContinueVisibility();
 
         if (lesson.minigame === "cut-chicken") {

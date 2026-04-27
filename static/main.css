@@ -1413,3 +1413,305 @@ body.is-quiz .site-nav {
 .report-home:hover {
     background-color: #b6762d;
 }
+
+/* ===========================================================
+   Notebook
+   =========================================================== */
+
+.lesson-task {
+    position: relative;
+    padding: 0.45rem 0.6rem;
+    border: 2px solid transparent;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease,
+        box-shadow 0.05s ease, transform 0.05s ease;
+}
+
+.lesson-task:hover,
+.lesson-task:focus-visible {
+    background-color: #fff3b0;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    outline: none;
+}
+
+.lesson-task:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+.lesson-task.just-saved {
+    background-color: #c8e6a0;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.lesson-task.already-saved {
+    background-color: #ffe0a3;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.lesson-task-hint {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.4rem;
+    color: var(--pixel-black);
+    background-color: #ffffff;
+    border: 2px solid var(--pixel-black);
+    padding: 0.3rem 0.4rem;
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.lesson-task:hover .lesson-task-hint,
+.lesson-task:focus-visible .lesson-task-hint {
+    opacity: 1;
+}
+
+.lesson-task.just-saved .lesson-task-hint,
+.lesson-task.already-saved .lesson-task-hint {
+    opacity: 1;
+}
+
+.lesson-task.just-saved .lesson-task-hint::after {
+    content: "saved!";
+    position: absolute;
+    inset: 0;
+    background: #c8e6a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lesson-task.already-saved .lesson-task-hint::after {
+    content: "already saved";
+    position: absolute;
+    inset: 0;
+    background: #ffe0a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notebook-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    image-rendering: pixelated;
+    display: block;
+}
+
+.notebook-trigger {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 3rem;
+    height: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    cursor: pointer;
+    z-index: 90;
+    transition: transform 0.05s ease, box-shadow 0.05s ease,
+        background-color 0.1s ease;
+}
+
+.notebook-trigger:hover {
+    background-color: var(--quiz-yellow, #ffd93b);
+}
+
+.notebook-trigger:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+.notebook-trigger:focus-visible {
+    outline: 3px solid var(--pixel-black);
+    outline-offset: 3px;
+}
+
+.notebook-trigger .notebook-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+}
+
+.quiz-notebook-btn {
+    position: absolute;
+    top: 1rem;
+    right: 4.4rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.05s ease, box-shadow 0.05s ease,
+        background-color 0.1s ease;
+}
+
+.quiz-notebook-btn:hover {
+    background: var(--quiz-yellow);
+}
+
+.quiz-notebook-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.quiz-notebook-btn .notebook-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.notebook-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1100;
+}
+
+.notebook-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(92vw, 28rem);
+    max-height: min(80vh, 32rem);
+    display: flex;
+    flex-direction: column;
+    background: #fff8e7;
+    border: 4px solid var(--pixel-black);
+    box-shadow: 6px 6px 0 var(--pixel-black);
+    z-index: 1101;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    color: var(--pixel-black);
+    image-rendering: pixelated;
+}
+
+.notebook-panel[hidden] {
+    display: none;
+}
+
+.notebook-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 3px solid var(--pixel-black);
+    background: #f3e3b8;
+}
+
+.notebook-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+}
+
+.notebook-close {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.65rem;
+    color: var(--pixel-black);
+    cursor: pointer;
+}
+
+.notebook-close:hover {
+    background: var(--quiz-yellow);
+}
+
+.notebook-close:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.notebook-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.notebook-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem 0.7rem;
+    margin-bottom: 0.6rem;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.notebook-item:last-child {
+    margin-bottom: 0;
+}
+
+.notebook-text {
+    flex: 1 1 auto;
+    font-size: 0.45rem;
+    line-height: 1.9;
+    word-break: break-word;
+}
+
+.notebook-delete {
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 2px 2px 0 var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.55rem;
+    color: var(--pixel-black);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.notebook-delete:hover {
+    background: #ff6b6b;
+    color: #ffffff;
+}
+
+.notebook-delete:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.notebook-empty {
+    margin: 0;
+    padding: 1.25rem 1rem 1.5rem;
+    font-size: 0.5rem;
+    line-height: 1.9;
+    text-align: center;
+}
+
+body.is-quiz .notebook-trigger {
+    display: none;
+}
