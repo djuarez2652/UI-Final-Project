@@ -1,4 +1,10 @@
 {
+  "0": {
+    "step_heading": "How to Play",
+    "instructions_label": "",
+    "minigame": "tutorial",
+    "tasks": []
+  },
   "1": {
     "step_heading": "Step 1: Prep the Chicken",
     "instructions_label": "Instructions:",
