@@ -5,3 +5,5 @@
 __pycache__/
 
 .env
+
+learn_progress.json

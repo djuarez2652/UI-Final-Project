@@ -7,6 +7,73 @@
     var SPRITES = STATIC_BASE + "imgs/sprites/";
 
     var HOLD_MS = 2000;
+    var TIMER_START_KEY = "orangeChickenLearnTimerStart";
+    var timerIntervalId = null;
+
+    function formatDuration(ms) {
+        var totalSeconds = Math.max(0, Math.floor(ms / 1000));
+        var minutes = Math.floor(totalSeconds / 60);
+        var seconds = totalSeconds % 60;
+        return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
+
+    function getTimerStart() {
+        var raw = window.localStorage.getItem(TIMER_START_KEY);
+        var startedAt = raw ? Number(raw) : 0;
+        return Number.isFinite(startedAt) && startedAt > 0 ? startedAt : 0;
+    }
+
+    function updateLearnTimerDisplay() {
+        var startedAt = getTimerStart();
+        var elapsed = startedAt ? Date.now() - startedAt : 0;
+        $("[data-learn-timer]").text(formatDuration(elapsed));
+    }
+
+    function startLearnTimer() {
+        if (!getTimerStart()) {
+            window.localStorage.setItem(TIMER_START_KEY, String(Date.now()));
+        }
+        updateLearnTimerDisplay();
+        if (timerIntervalId !== null) {
+            clearInterval(timerIntervalId);
+        }
+        timerIntervalId = setInterval(updateLearnTimerDisplay, 1000);
+    }
+
+    function saveLearnTime(elapsed) {
+        return $.ajax({
+            url: "/learn/time",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ elapsed_ms: elapsed })
+        });
+    }
+
+    function finishLearnTimer() {
+        var startedAt = getTimerStart();
+        if (!startedAt) {
+            return null;
+        }
+        var elapsed = Date.now() - startedAt;
+        window.localStorage.removeItem(TIMER_START_KEY);
+        $("[data-learn-timer]").text(formatDuration(elapsed));
+        if (timerIntervalId !== null) {
+            clearInterval(timerIntervalId);
+            timerIntervalId = null;
+        }
+        return saveLearnTime(elapsed);
+    }
+
+    function finishLearnTimerAndGo(href) {
+        var saveRequest = finishLearnTimer();
+        if (saveRequest && typeof saveRequest.always === "function") {
+            saveRequest.always(function () {
+                window.location.href = href;
+            });
+            return;
+        }
+        window.location.href = href;
+    }
 
     function escapeHtml(text) {
         return $("<div/>").text(text).html();
@@ -1571,7 +1638,7 @@
                 .prop("checked", true)
                 .addClass("done")
                 .trigger("change");
-            window.location.href = "/quiz";
+            finishLearnTimerAndGo("/quiz");
         });
     }
 
@@ -1683,6 +1750,9 @@
             ? "/quiz"
             : "/learn/" + (Number(lessonId) + 1);
         var nextLabel = Number(lessonId) >= 5 ? "Take the Quiz" : "Continue";
+        var nextClass = Number(lessonId) >= 5
+            ? "btn btn-continue lesson-finish-link"
+            : "btn btn-continue";
 
         var sideHtml =
             '<aside class="lesson-side">' +
@@ -1694,7 +1764,7 @@
             "</h2>" +
             buildTaskList(tasks, lessonId) +
             '<div class="lesson-continue-wrap is-hidden">' +
-            '<a class="btn btn-continue" href="' + nextHref + '">' +
+            '<a class="' + nextClass + '" href="' + nextHref + '">' +
             nextLabel +
             '</a>' +
             "</div>" +
@@ -1741,8 +1811,17 @@
         }
 
         $("#lesson-root")
-            .off("change.lesson click.notebook")
+            .off("change.lesson click.notebook click.lessonTimer")
             .on("change.lesson", ".lesson-checkbox", updateContinueVisibility)
+            .on("click.lessonTimer", ".lesson-finish-link", function (e) {
+                e.preventDefault();
+                finishLearnTimerAndGo($(this).attr("href"));
+            })
+            .on("click.notebook", ".lesson-task", function (e) {
+                var target = e.target;
+                if ($(target).closest(".lesson-checkbox, .lesson-task-label").length) return;
+                $(this).find(".lesson-task-label").trigger("click");
+            })
             .on("click.notebook", ".lesson-task-label", function (e) {
                 e.preventDefault();
                 var $task = $(this).closest(".lesson-task");
@@ -1784,4 +1863,5 @@
     }
 
     $(renderLesson);
+    $(startLearnTimer);
 })(jQuery);

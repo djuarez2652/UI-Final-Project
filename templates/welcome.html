@@ -5,8 +5,11 @@
     <h1 class="welcome-title mb-3">LET'S START COOKING</h1>
     <p class="welcome-subtitle mb-5">Orange Chicken</p>
     <img src="{{ url_for('static', filename='imgs/main-oc.png') }}" alt="Pixel art plate of orange chicken" class="img-fluid welcome-hero mx-auto d-block mb-5">
+    {% if last_learn_time %}
+    <p class="welcome-best-time">Last cooking time: {{ last_learn_time }}</p>
+    {% endif %}
     <p class="mb-0">
-        <a href="{{ url_for('learn', lesson_id=0) }}" class="btn btn-continue">Continue</a>
+        <a href="{{ url_for('learn', lesson_id=0) }}" class="btn btn-continue" data-start-learn-timer>Continue</a>
     </p>
 </main>
 {% endblock %}

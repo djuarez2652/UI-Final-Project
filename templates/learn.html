@@ -3,6 +3,10 @@
 {% block title %}{{ lesson.step_heading }}{% endblock %}
 
 {% block content %}
+<div class="container lesson-timer-wrap" aria-live="polite">
+    <span class="lesson-timer-label">Time</span>
+    <span class="lesson-timer-value" data-learn-timer>00:00</span>
+</div>
 <main class="container lesson-main" id="lesson-root" data-lesson-id="{{ lesson_id }}"></main>
 <script type="application/json" id="lesson-data">{{ lesson | tojson }}</script>
 {% endblock %}

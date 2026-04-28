@@ -65,6 +65,19 @@
     height: auto;
 }
 
+.welcome-best-time {
+    display: inline-block;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.42rem, 1.4vw, 0.6rem);
+    line-height: 1.8;
+    color: var(--pixel-black);
+    background: #fff8e7;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.75rem;
+}
+
 .btn-continue {
     font-family: "Press Start 2P", system-ui, sans-serif;
     font-size: clamp(0.45rem, 1.6vw, 0.65rem);
@@ -101,6 +114,30 @@
     padding-bottom: 3rem;
     max-width: 64rem;
     text-align: left;
+}
+
+.lesson-timer-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.lesson-timer-label,
+.lesson-timer-value {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.42rem, 1.3vw, 0.6rem);
+    line-height: 1.6;
+    color: var(--pixel-black);
+}
+
+.lesson-timer-value {
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    padding: 0.45rem 0.65rem;
 }
 
 .lesson-layout {
