@@ -826,6 +826,87 @@
     color: var(--pixel-black);
 }
 
+.about-page {
+    max-width: 36rem;
+    text-align: left;
+}
+
+.page-title-about {
+    color: var(--quiz-orange, #d18b3a);
+}
+
+.page-about-rule {
+    width: 100%;
+    max-width: 14rem;
+    height: 0.25rem;
+    background-color: var(--quiz-orange, #d18b3a);
+}
+
+.about-description {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.42rem, 1.45vw, 0.58rem);
+    line-height: 2;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.contact-team {
+    max-width: 36rem;
+    padding: 1rem 1.1rem 1.15rem;
+    border: 2px dashed rgba(0, 0, 0, 0.35);
+    background: #ffffff;
+}
+
+.contact-team-heading {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.42rem, 1.45vw, 0.58rem);
+    line-height: 1.8;
+    color: var(--pixel-black);
+    margin-bottom: 0.85rem;
+    font-weight: 400;
+}
+
+.contact-team-list {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.38rem, 1.35vw, 0.52rem);
+    line-height: 2;
+    color: var(--pixel-black);
+}
+
+.contact-team-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin-bottom: 0.65rem;
+}
+
+.contact-team-item:last-child {
+    margin-bottom: 0;
+}
+
+.contact-team-arrow {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+}
+
+.contact-team-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.contact-team-name::after {
+    content: "\00a0";
+}
+
+a.contact-team-email {
+    color: var(--pixel-black);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+}
+
+a.contact-team-email:hover {
+    opacity: 0.85;
+}
+
 @media (min-width: 768px) {
     .site-nav-link {
         font-size: 0.65rem;
