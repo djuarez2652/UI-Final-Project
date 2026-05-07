@@ -147,6 +147,32 @@
         $wrap.toggleClass("is-hidden", !allChecked);
     }
 
+    function updateTaskProgressStates() {
+        var foundCurrent = false;
+
+        $(".lesson-side .lesson-task").each(function () {
+            var $task = $(this);
+            var $box = $task.find(".lesson-checkbox");
+            var isDone = $box.prop("checked");
+
+            $task.removeClass("is-current is-upcoming is-complete");
+
+            if (isDone) {
+                $task.addClass("is-complete");
+            } else if (!foundCurrent) {
+                $task.addClass("is-current");
+                foundCurrent = true;
+            } else {
+                $task.addClass("is-upcoming");
+            }
+        });
+    }
+
+    function updateLessonProgressUi() {
+        updateContinueVisibility();
+        updateTaskProgressStates();
+    }
+
     function buildCuttingStage() {
         return (
             '<div id="cutting-stage" class="cutting-stage">' +
@@ -1812,7 +1838,7 @@
 
         $("#lesson-root")
             .off("change.lesson click.notebook click.lessonTimer")
-            .on("change.lesson", ".lesson-checkbox", updateContinueVisibility)
+            .on("change.lesson", ".lesson-checkbox", updateLessonProgressUi)
             .on("click.lessonTimer", ".lesson-finish-link", function (e) {
                 e.preventDefault();
                 finishLearnTimerAndGo($(this).attr("href"));
@@ -1847,7 +1873,7 @@
                 if (window.Notebook) window.Notebook.toggle();
             });
 
-        updateContinueVisibility();
+        updateLessonProgressUi();
 
         if (lesson.minigame === "cut-chicken") {
             initCutChickenLesson();

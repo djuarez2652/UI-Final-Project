@@ -1621,6 +1621,21 @@ body.is-quiz .site-nav {
         box-shadow 0.05s ease, transform 0.05s ease;
 }
 
+.lesson-task.is-current {
+    background-color: #fff3b0;
+    border-color: var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+}
+
+.lesson-task.is-upcoming .lesson-task-label {
+    color: rgba(0, 0, 0, 0.38);
+}
+
+.lesson-task.is-upcoming .lesson-checkbox {
+    border-color: rgba(0, 0, 0, 0.38);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+}
+
 .lesson-task:hover,
 .lesson-task:focus-visible {
     background-color: #fff3b0;
