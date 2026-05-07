@@ -594,6 +594,10 @@
     cursor: grabbing;
 }
 
+.sauce-pour-stage .chicken-bowl[hidden] {
+    display: none;
+}
+
 .sauce-pour-stage .pan {
     cursor: grab;
     pointer-events: auto;
@@ -1636,6 +1640,10 @@ body.is-quiz .site-nav {
     box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
 }
 
+.lesson-task.show-stuck-help {
+    margin-bottom: 3.75rem;
+}
+
 .lesson-task:hover,
 .lesson-task:focus-visible {
     background-color: #fff3b0;
@@ -1676,6 +1684,47 @@ body.is-quiz .site-nav {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.12s ease;
+}
+
+.lesson-stuck-help {
+    position: absolute;
+    left: 0.6rem;
+    top: calc(100% + 0.35rem);
+    display: none;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: min(28rem, 100%);
+    padding: 0.45rem 0.55rem;
+    background-color: #ffffff;
+    border: 2px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    z-index: 3;
+}
+
+.lesson-task.show-stuck-help .lesson-stuck-help {
+    display: inline-flex;
+}
+
+.lesson-stuck-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.15rem;
+    height: 1.15rem;
+    color: #ffffff;
+    background-color: #2d8f47;
+    border: 2px solid var(--pixel-black);
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.55rem;
+    line-height: 1;
+}
+
+.lesson-stuck-text {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.4rem;
+    line-height: 1.6;
+    color: var(--pixel-black);
 }
 
 .lesson-task:hover .lesson-task-hint,

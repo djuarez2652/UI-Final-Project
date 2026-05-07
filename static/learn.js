@@ -8,7 +8,9 @@
 
     var HOLD_MS = 2000;
     var TIMER_START_KEY = "orangeChickenLearnTimerStart";
+    var STUCK_HELP_DELAY_MS = 10000;
     var timerIntervalId = null;
+    var stuckHelpTimeoutId = null;
 
     function formatDuration(ms) {
         var totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -90,15 +92,39 @@
         };
     }
 
+    function getStuckHint(taskId) {
+        var hints = {
+            cut: "Drag the knife over the chicken and hold until the green bar fills.",
+            season: "Drag both shakers onto the chicken, one at a time.",
+            toss: "Drag the bowl back and forth to toss until the bar fills.",
+            "heat-oil": "Drag the oil bottle over the wok and hold steady.",
+            "fry-drop": "Drag the coated chicken bowl onto the hot wok and hold.",
+            "fry-cook": "Wait while the chicken cooks. The green bar shows when it is done.",
+            "fry-transfer": "Use the slotted spoon: pick up from the wok, then drop into the bowl.",
+            "drain-oil": "Click the wok to drain most of the oil.",
+            "add-spices": "Drag the aromatics plate onto the wok and hold.",
+            "stir-fry": "Drag the wok back and forth to stir fry until the bar fills.",
+            "mix-sauce": "Drag each bottle over the bowl.",
+            "pour-sauce": "Drag the sauce bowl onto the wok and hold.",
+            "toss-sauce": "Drag the wok back and forth to coat the chicken.",
+            plate: "Drag the wok over the plate and hold.",
+            garnish: "Drag the garnish bowl over the plated chicken and hold.",
+            serve: "Click Serve to finish and take the quiz."
+        };
+        return hints[taskId] || "Try dragging the active item onto its target and hold until the bar fills.";
+    }
+
     function buildTaskList(tasks, lessonId) {
         var items = $.map(tasks, function (task, index) {
             var domId = "lesson-" + lessonId + "-task-" + (index + 1);
             var disabledAttr = task.auto ? " disabled" : "";
             var labelClass = "lesson-task-label" + (task.auto ? " disabled" : "");
+            var hint = getStuckHint(task.id);
             return (
                 '<li class="lesson-task" tabindex="0" role="button"' +
                 ' aria-label="Save instruction to notebook"' +
-                ' data-note-text="' + escapeHtml(task.text) + '">' +
+                ' data-note-text="' + escapeHtml(task.text) + '"' +
+                ' data-stuck-hint="' + escapeHtml(hint) + '">' +
                 '<input type="checkbox" class="lesson-checkbox"' +
                 disabledAttr +
                 ' id="' + domId + '"' +
@@ -108,6 +134,10 @@
                 escapeHtml(task.text) +
                 "</label>" +
                 '<span class="lesson-task-hint" aria-hidden="true">+ note</span>' +
+                '<span class="lesson-stuck-help" aria-live="polite">' +
+                '<span class="lesson-stuck-icon">?</span>' +
+                '<span class="lesson-stuck-text">' + escapeHtml(hint) + '</span>' +
+                '</span>' +
                 "</li>"
             );
         }).join("");
@@ -168,9 +198,58 @@
         });
     }
 
+    function clearStuckHelpTimer() {
+        if (stuckHelpTimeoutId !== null) {
+            clearTimeout(stuckHelpTimeoutId);
+            stuckHelpTimeoutId = null;
+        }
+    }
+
+    function hasActiveTimedProgress() {
+        return $("#cut-progress.visible, #heat-progress.visible").length > 0;
+    }
+
+    function scheduleStuckHelp() {
+        clearStuckHelpTimer();
+        $(".lesson-task").removeClass("show-stuck-help");
+
+        var $current = $(".lesson-side .lesson-task.is-current").first();
+        if (!$current.length) {
+            return;
+        }
+
+        var taskId = $current.find(".lesson-checkbox").data("task-id");
+
+        function showIfStillStuck() {
+            var $stillCurrent = $(".lesson-side .lesson-task.is-current").first();
+            if (!$stillCurrent.length) {
+                return;
+            }
+
+            var $box = $stillCurrent.find(".lesson-checkbox");
+            if ($box.prop("checked") || $box.data("task-id") !== taskId) {
+                scheduleStuckHelp();
+                return;
+            }
+
+            if (hasActiveTimedProgress()) {
+                stuckHelpTimeoutId = setTimeout(showIfStillStuck, 5000);
+                return;
+            }
+
+            $stillCurrent.addClass("show-stuck-help");
+        }
+
+        stuckHelpTimeoutId = setTimeout(function () {
+            stuckHelpTimeoutId = null;
+            showIfStillStuck();
+        }, STUCK_HELP_DELAY_MS);
+    }
+
     function updateLessonProgressUi() {
         updateContinueVisibility();
         updateTaskProgressStates();
+        scheduleStuckHelp();
     }
 
     function buildCuttingStage() {
@@ -243,7 +322,7 @@
             '<div id="heat-progress"><div class="bar"></div></div>' +
             '<img class="sauce-bowl" data-state="still" alt="sauce bowl" src="' +
             SPRITES + 'still-sauce-bowl.png">' +
-            '<img class="chicken-bowl" alt="fried chicken bowl" src="' +
+            '<img class="chicken-bowl" alt="fried chicken bowl" hidden src="' +
             SPRITES + 'little-fried-chicken-bowl.png">' +
             "</div>"
         );
@@ -277,8 +356,8 @@
     function buildAromaticsStage() {
         return (
             '<div id="aromatics-stage" class="stove-stage aromatics-stage">' +
-            '<img class="pan" data-state="cooked" alt="wok" src="' +
-            SPRITES + 'cooked-chicken-oil-pan.png">' +
+            '<img class="pan" data-state="hot" alt="wok" src="' +
+            SPRITES + 'bubbling-oil-pan.png">' +
             '<div id="heat-progress"><div class="bar"></div></div>' +
             '<img class="spices-plate" alt="aromatic spices plate" hidden' +
             ' src="' + SPRITES + 'aromatic-spices-plate.png">' +
@@ -1301,6 +1380,7 @@
                     .prop("checked", true)
                     .addClass("done")
                     .trigger("change");
+                $chicken.removeAttr("hidden").hide().fadeIn(250);
                 maybeSwapPan();
             }
         });
