@@ -78,6 +78,10 @@
     margin-bottom: 1.75rem;
 }
 
+.welcome-best-time + .welcome-best-time {
+    margin-left: 0.75rem;
+}
+
 .btn-continue {
     font-family: "Press Start 2P", system-ui, sans-serif;
     font-size: clamp(0.45rem, 1.6vw, 0.65rem);
@@ -872,6 +876,32 @@ body.is-quiz .site-nav {
     z-index: 50;
 }
 
+.quiz-live-timer {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.7rem;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.55rem;
+    color: var(--pixel-black);
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    z-index: 50;
+}
+
+.quiz-live-timer-label {
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.quiz-live-timer-value {
+    color: var(--quiz-green);
+}
+
 .quiz-btn {
     font-family: "Press Start 2P", system-ui, sans-serif;
     font-size: 0.7rem;
@@ -1509,6 +1539,13 @@ body.is-quiz .site-nav {
     font-size: 0.75rem;
     color: var(--pixel-black);
     margin: 0.6rem 0 0.45rem;
+}
+
+.report-quiz-time {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.55rem;
+    color: var(--pixel-black);
+    margin-bottom: 0.55rem;
 }
 
 .report-stars {

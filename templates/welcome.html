@@ -8,6 +8,9 @@
     {% if last_learn_time %}
     <p class="welcome-best-time">Last cooking time: {{ last_learn_time }}</p>
     {% endif %}
+    {% if last_quiz_time %}
+    <p class="welcome-best-time">Last quiz time: {{ last_quiz_time }}</p>
+    {% endif %}
     <p class="mb-0">
         <a href="{{ url_for('learn', lesson_id=0) }}" class="btn btn-continue" data-start-learn-timer>Continue</a>
     </p>

@@ -1,5 +1,5 @@
 /**
- * Quiz controller: intro splash, three scored mini-games, scoring report.
+ * Quiz controller: intro splash, five scored mini-games, scoring report.
  */
 (function ($) {
     var STATIC_BASE = "/static/";
@@ -14,6 +14,9 @@
     var SAUCE_TARGETS = { soy: 3, vinegar: 3, sugar: 3, orange: 2, sesame: 1 };
 
     var scores = { temp: null, fry: null, sauce: null, oil: null, garnish: null };
+    var quizTimerStartMs = null;
+    var lastQuizElapsedMs = null;
+    var quizTimerIntervalId = null;
 
     function escapeHtml(text) {
         return $("<div/>").text(text).html();
@@ -27,6 +30,62 @@
         $("#quiz-root").empty();
     }
 
+    function formatDuration(ms) {
+        var totalSeconds = Math.max(0, Math.floor(ms / 1000));
+        var minutes = Math.floor(totalSeconds / 60);
+        var seconds = totalSeconds % 60;
+        return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
+
+    function currentQuizElapsedMs() {
+        if (lastQuizElapsedMs != null) return lastQuizElapsedMs;
+        if (quizTimerStartMs == null) return 0;
+        return Date.now() - quizTimerStartMs;
+    }
+
+    function updateQuizTimerDisplay() {
+        $(".quiz-live-timer-value").text(formatDuration(currentQuizElapsedMs()));
+    }
+
+    function liveTimerHtml() {
+        if (quizTimerStartMs == null) return "";
+        return (
+            '<div class="quiz-live-timer" aria-live="polite">' +
+            '<span class="quiz-live-timer-label">Time</span>' +
+            '<span class="quiz-live-timer-value">' + formatDuration(currentQuizElapsedMs()) + '</span>' +
+            '</div>'
+        );
+    }
+
+    function startQuizTimer() {
+        quizTimerStartMs = Date.now();
+        lastQuizElapsedMs = null;
+        if (quizTimerIntervalId) clearInterval(quizTimerIntervalId);
+        quizTimerIntervalId = setInterval(updateQuizTimerDisplay, 1000);
+    }
+
+    function stopQuizTimer() {
+        if (lastQuizElapsedMs != null) return lastQuizElapsedMs;
+        if (quizTimerStartMs == null) return 0;
+        lastQuizElapsedMs = Date.now() - quizTimerStartMs;
+        quizTimerStartMs = null;
+        if (quizTimerIntervalId) {
+            clearInterval(quizTimerIntervalId);
+            quizTimerIntervalId = null;
+        }
+        return lastQuizElapsedMs;
+    }
+
+    function saveQuizTime(elapsedMs) {
+        if (!elapsedMs) return;
+        $.ajax({
+            url: "/quiz/time",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ elapsed_ms: elapsedMs })
+        });
+    }
+
     function exitButton(opts) {
         var includeNotebook = !opts || opts.notebook !== false;
         var bookIcon = (window.Notebook && window.Notebook.bookIconHtml) || "";
@@ -37,7 +96,7 @@
                 '</button>'
               )
             : "";
-        return notebookHtml + '<a href="/" class="quiz-exit" aria-label="Exit quiz">X</a>';
+        return notebookHtml + liveTimerHtml() + '<a href="/" class="quiz-exit" aria-label="Exit quiz">X</a>';
     }
 
     /* ---------- Intro ---------- */
@@ -55,7 +114,10 @@
             '</div>' +
             '</section>';
         $("#quiz-root").html(html);
-        $(".quiz-start-btn").on("click", renderQuiz1);
+        $(".quiz-start-btn").on("click", function () {
+            startQuizTimer();
+            renderQuiz1();
+        });
     }
 
     /* ---------- Quiz 1: Oil Temperature ---------- */
@@ -602,6 +664,8 @@
     function renderReport() {
         clearRoot();
         $("body").addClass("is-quiz");
+        var quizElapsedMs = stopQuizTimer();
+        saveQuizTime(quizElapsedMs);
         var t = scores.temp != null ? scores.temp : 0;
         var f = scores.fry != null ? scores.fry : 0;
         var s = scores.sauce != null ? scores.sauce : 0;
@@ -640,6 +704,7 @@
             '<div class="report-header">SCORING REPORT</div>' +
             '<ul class="report-list">' + rowHtml + '</ul>' +
             '<div class="report-total">TOTAL SCORE: ' + total + ' / 10</div>' +
+            '<div class="report-quiz-time">QUIZ TIME: ' + formatDuration(quizElapsedMs) + '</div>' +
             '<div class="report-stars">' + starHtml + '</div>' +
             '<div class="report-rated">RATED BY: "MASTER CHEF BOT"</div>' +
             '<div class="report-actions">' +
@@ -653,6 +718,12 @@
 
         $(".report-retry").on("click", function () {
             scores = { temp: null, fry: null, sauce: null, oil: null, garnish: null };
+            quizTimerStartMs = null;
+            lastQuizElapsedMs = null;
+            if (quizTimerIntervalId) {
+                clearInterval(quizTimerIntervalId);
+                quizTimerIntervalId = null;
+            }
             renderIntro();
         });
     }

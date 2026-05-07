@@ -40,9 +40,15 @@ LESSONS = load_lessons()
 @app.route("/")
 def home():
     progress = load_progress()
-    last_time_ms = progress.get("last_learn_time_ms")
-    last_learn_time = format_duration(last_time_ms) if last_time_ms else None
-    return render_template("welcome.html", last_learn_time=last_learn_time)
+    last_learn_time_ms = progress.get("last_learn_time_ms")
+    last_quiz_time_ms = progress.get("last_quiz_time_ms")
+    last_learn_time = format_duration(last_learn_time_ms) if last_learn_time_ms else None
+    last_quiz_time = format_duration(last_quiz_time_ms) if last_quiz_time_ms else None
+    return render_template(
+        "welcome.html",
+        last_learn_time=last_learn_time,
+        last_quiz_time=last_quiz_time,
+    )
 
 
 @app.route("/about")
@@ -80,6 +86,20 @@ def save_learn_time():
     progress["last_learn_time_ms"] = elapsed_ms
     save_progress(progress)
     return jsonify({"last_learn_time": format_duration(elapsed_ms)})
+
+
+@app.post("/quiz/time")
+def save_quiz_time():
+    payload = request.get_json(silent=True) or {}
+    elapsed_ms = payload.get("elapsed_ms")
+    if not isinstance(elapsed_ms, (int, float)) or elapsed_ms <= 0:
+        abort(400)
+
+    elapsed_ms = int(elapsed_ms)
+    progress = load_progress()
+    progress["last_quiz_time_ms"] = elapsed_ms
+    save_progress(progress)
+    return jsonify({"last_quiz_time": format_duration(elapsed_ms)})
 
 
 if __name__ == "__main__":
