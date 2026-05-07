@@ -113,6 +113,34 @@
     box-shadow: 2px 2px 0 var(--pixel-black);
 }
 
+.btn-reset-timers {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: clamp(0.4rem, 1.3vw, 0.55rem);
+    line-height: 1.8;
+    color: var(--pixel-black);
+    background-color: #ffffff;
+    border: 3px solid var(--pixel-black);
+    border-radius: 0;
+    padding: 0.65rem 1.1rem;
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    cursor: pointer;
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.btn-reset-timers:hover {
+    background-color: #fff8e7;
+}
+
+.btn-reset-timers:focus-visible {
+    outline: 3px solid var(--pixel-black);
+    outline-offset: 3px;
+}
+
+.btn-reset-timers:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
 .lesson-main {
     padding-top: 1rem;
     padding-bottom: 3rem;

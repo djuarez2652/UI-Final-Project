@@ -11,8 +11,13 @@
     {% if last_quiz_time %}
     <p class="welcome-best-time">Last quiz time: {{ last_quiz_time }}</p>
     {% endif %}
-    <p class="mb-0">
+    <p class="mb-3">
         <a href="{{ url_for('learn', lesson_id=0) }}" class="btn btn-continue" data-start-learn-timer>Continue</a>
     </p>
+    {% if last_learn_time or last_quiz_time %}
+    <p class="mb-0">
+        <button type="button" class="btn-reset-timers" data-reset-timers>Reset Timers</button>
+    </p>
+    {% endif %}
 </main>
 {% endblock %}

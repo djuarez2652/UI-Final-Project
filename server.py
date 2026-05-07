@@ -102,5 +102,14 @@ def save_quiz_time():
     return jsonify({"last_quiz_time": format_duration(elapsed_ms)})
 
 
+@app.post("/timers/reset")
+def reset_timers():
+    progress = load_progress()
+    progress.pop("last_learn_time_ms", None)
+    progress.pop("last_quiz_time_ms", None)
+    save_progress(progress)
+    return jsonify({"ok": True})
+
+
 if __name__ == "__main__":
     app.run(debug=True)
