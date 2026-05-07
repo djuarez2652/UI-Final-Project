@@ -1352,6 +1352,97 @@ body.is-quiz .site-nav {
     color: var(--pixel-black);
 }
 
+/* ---- Quiz 4 / 5 multiple-choice ---- */
+
+.quiz-scene-choice {
+    background-image: url("imgs/backgrounds/empty-default-bg.png");
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    padding: 0.9rem 0.8rem;
+    gap: 0.8rem;
+}
+
+.quiz-choice-prompt {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.6rem;
+    line-height: 1.5;
+    color: var(--pixel-black);
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    padding: 0.6rem 0.7rem;
+    text-align: center;
+}
+
+.quiz-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.quiz-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.35rem;
+    background: #ffffff;
+    border: 3px solid var(--pixel-black);
+    box-shadow: 3px 3px 0 var(--pixel-black);
+    cursor: pointer;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    color: var(--pixel-black);
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.quiz-choice:hover {
+    background: var(--quiz-marble);
+}
+
+.quiz-choice:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.quiz-choice.selected {
+    background: var(--quiz-orange);
+    color: #ffffff;
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--pixel-black);
+}
+
+.quiz-choice-art {
+    width: 100%;
+    height: 3.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.quiz-choice-art img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.quiz-choice-label {
+    font-size: 0.42rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.quiz-btn:disabled,
+.quiz-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
 /* ---- Report ---- */
 
 .quiz-report-stage {

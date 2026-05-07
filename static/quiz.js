@@ -13,7 +13,7 @@
     var FRY_VIRTUAL_PER_REAL_SEC = 30;
     var SAUCE_TARGETS = { soy: 3, vinegar: 3, sugar: 3, orange: 2, sesame: 1 };
 
-    var scores = { temp: null, fry: null, sauce: null };
+    var scores = { temp: null, fry: null, sauce: null, oil: null, garnish: null };
 
     function escapeHtml(text) {
         return $("<div/>").text(text).html();
@@ -65,7 +65,7 @@
         var html =
             '<section class="quiz-stage">' +
             exitButton() +
-            '<div class="quiz-step-tag">Quiz 1 / 3 &middot; Oil Temperature</div>' +
+            '<div class="quiz-step-tag">Quiz 1 / 5 &middot; Oil Temperature</div>' +
             '<div class="quiz-frame">' +
             '<div class="quiz-scene quiz-scene-stove">' +
             '<img class="quiz-pan" alt="wok with oil" src="' + SPRITES + 'bubbling-oil-pan.png">' +
@@ -174,7 +174,7 @@
         var html =
             '<section class="quiz-stage">' +
             exitButton() +
-            '<div class="quiz-step-tag">Quiz 2 / 3 &middot; Frying Time</div>' +
+            '<div class="quiz-step-tag">Quiz 2 / 5 &middot; Frying Time</div>' +
             '<div class="quiz-frame">' +
             '<div class="quiz-scene quiz-scene-stove">' +
             '<img class="quiz-pan" alt="wok with oil" src="' + SPRITES + 'bubbling-oil-pan.png">' +
@@ -439,7 +439,7 @@
         var html =
             '<section class="quiz-stage">' +
             exitButton() +
-            '<div class="quiz-step-tag">Quiz 3 / 3 &middot; Sauce Ratios</div>' +
+            '<div class="quiz-step-tag">Quiz 3 / 5 &middot; Sauce Ratios</div>' +
             '<div class="quiz-frame">' +
             '<div class="quiz-scene quiz-scene-sauce">' +
             '<div class="quiz-ing-row">' + ingHtml + '</div>' +
@@ -485,7 +485,7 @@
 
         $(".quiz-confirm-btn").on("click", function () {
             scores.sauce = computeSauceScore(counts);
-            renderReport();
+            renderQuiz4();
         });
     }
 
@@ -512,6 +512,91 @@
         return Math.round(score * 10) / 10;
     }
 
+    /* ---------- Quiz 4 / 5: Multiple-choice question helpers ---------- */
+
+    function renderChoiceQuiz(opts) {
+        clearRoot();
+        var optionsHtml = $.map(opts.options, function (opt) {
+            var artHtml = "";
+            if (opt.images && opt.images.length) {
+                artHtml = $.map(opt.images, function (src) {
+                    return '<img src="' + SPRITES + src + '" alt="">';
+                }).join("");
+            } else if (opt.image) {
+                artHtml = '<img src="' + SPRITES + opt.image + '" alt="">';
+            }
+            return (
+                '<button type="button" class="quiz-choice" data-id="' + opt.id + '">' +
+                '<div class="quiz-choice-art">' + artHtml + '</div>' +
+                '<div class="quiz-choice-label">' + escapeHtml(opt.label) + '</div>' +
+                '</button>'
+            );
+        }).join("");
+
+        var html =
+            '<section class="quiz-stage">' +
+            exitButton() +
+            '<div class="quiz-step-tag">' + escapeHtml(opts.tag) + '</div>' +
+            '<div class="quiz-frame">' +
+            '<div class="quiz-scene quiz-scene-choice">' +
+            '<div class="quiz-choice-prompt">' + escapeHtml(opts.prompt) + '</div>' +
+            '<div class="quiz-choice-grid">' + optionsHtml + '</div>' +
+            '</div>' +
+            '<div class="quiz-control-panel">' +
+            '<div class="quiz-control-label">Pick the best answer</div>' +
+            '<button type="button" class="quiz-btn quiz-confirm-btn" disabled>Confirm</button>' +
+            '</div>' +
+            '</div>' +
+            '</section>';
+        $("#quiz-root").html(html);
+
+        var selectedId = null;
+
+        $(".quiz-choice").on("click", function () {
+            $(".quiz-choice").removeClass("selected");
+            $(this).addClass("selected");
+            selectedId = $(this).data("id");
+            $(".quiz-confirm-btn").prop("disabled", false);
+        });
+
+        $(".quiz-confirm-btn").on("click", function () {
+            if (selectedId == null) return;
+            opts.onConfirm(selectedId);
+        });
+    }
+
+    function renderQuiz4() {
+        renderChoiceQuiz({
+            tag: "Quiz 4 / 5 \u00B7 Aromatics Oil",
+            prompt: "Before adding the aromatics, how much oil should stay in the wok?",
+            options: [
+                { id: "none", label: "All of it \u2014 leave it full", image: "full-pan.png" },
+                { id: "tbsp", label: "About 1 tablespoon", image: "less-oil-pan.png" },
+                { id: "dry", label: "Drain all of it \u2014 dry wok", image: "plain-pan.png" }
+            ],
+            onConfirm: function (id) {
+                scores.oil = id === "tbsp" ? 10 : 0;
+                renderQuiz5();
+            }
+        });
+    }
+
+    function renderQuiz5() {
+        renderChoiceQuiz({
+            tag: "Quiz 5 / 5 \u00B7 Final Garnish",
+            prompt: "What goes on top right before serving?",
+            options: [
+                { id: "garnish", label: "Green onions & sesame seeds", image: "green-onion-sesame-seed-bowl.png" },
+                { id: "orange", label: "More orange slices", image: "orange-slices.png" },
+                { id: "cornstarch", label: "A dusting of cornstarch", image: "cornstarch.png" }
+            ],
+            onConfirm: function (id) {
+                scores.garnish = id === "garnish" ? 10 : 0;
+                renderReport();
+            }
+        });
+    }
+
     /* ---------- Scoring Report ---------- */
 
     function renderReport() {
@@ -520,7 +605,9 @@
         var t = scores.temp != null ? scores.temp : 0;
         var f = scores.fry != null ? scores.fry : 0;
         var s = scores.sauce != null ? scores.sauce : 0;
-        var total = Math.round(((t + f + s) / 3) * 10) / 10;
+        var o = scores.oil != null ? scores.oil : 0;
+        var g = scores.garnish != null ? scores.garnish : 0;
+        var total = Math.round(((t + f + s + o + g) / 5) * 10) / 10;
 
         var stars = Math.round(total / 2);
         var starHtml = "";
@@ -531,7 +618,9 @@
         var rows = [
             { icon: "&#127869;", label: "Oil Temperature", score: t },
             { icon: "&#9201;", label: "Frying Duration", score: f },
-            { icon: "&#127858;", label: "Sauce Ratios", score: s }
+            { icon: "&#127858;", label: "Sauce Ratios", score: s },
+            { icon: "&#127857;", label: "Aromatics Oil", score: o },
+            { icon: "&#127811;", label: "Final Garnish", score: g }
         ];
         var rowHtml = $.map(rows, function (r) {
             return (
@@ -563,7 +652,7 @@
         $("#quiz-root").html(html);
 
         $(".report-retry").on("click", function () {
-            scores = { temp: null, fry: null, sauce: null };
+            scores = { temp: null, fry: null, sauce: null, oil: null, garnish: null };
             renderIntro();
         });
     }
