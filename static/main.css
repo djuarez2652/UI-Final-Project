@@ -1556,6 +1556,16 @@ body.is-quiz .site-nav {
     box-shadow: 1px 1px 0 var(--pixel-black);
 }
 
+.quiz-choice.correct {
+    background: var(--quiz-green);
+    color: #ffffff;
+}
+
+.quiz-choice:disabled,
+.quiz-choice[disabled] {
+    cursor: not-allowed;
+}
+
 .quiz-choice-art {
     width: 100%;
     height: 3.6rem;
@@ -1584,6 +1594,23 @@ body.is-quiz .site-nav {
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+.quiz-answer-feedback {
+    margin-bottom: 0.85rem;
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    color: var(--pixel-black);
+}
+
+.quiz-answer-feedback-title {
+    font-size: 0.65rem;
+    margin-bottom: 0.45rem;
+    color: var(--quiz-orange);
+}
+
+.quiz-answer-feedback-body {
+    font-size: 0.5rem;
+    line-height: 1.7;
 }
 
 /* ---- Report ---- */

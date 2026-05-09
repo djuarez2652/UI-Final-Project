@@ -86,6 +86,17 @@
         });
     }
 
+    function continueAfterWrongAnswer(correctAnswer, onContinue) {
+        $(".quiz-control-panel").html(
+            '<div class="quiz-answer-feedback">' +
+            '<div class="quiz-answer-feedback-title">Not quite!</div>' +
+            '<div class="quiz-answer-feedback-body">Correct answer: ' + escapeHtml(correctAnswer) + '</div>' +
+            '</div>' +
+            '<button type="button" class="quiz-btn quiz-continue-btn">Continue</button>'
+        );
+        $(".quiz-continue-btn").on("click", onContinue);
+    }
+
     function exitButton(opts) {
         var includeNotebook = !opts || opts.notebook !== false;
         var bookIcon = (window.Notebook && window.Notebook.bookIconHtml) || "";
@@ -218,7 +229,13 @@
         $(".quiz-confirm-btn").on("click", function () {
             $(document).off(".tempslider");
             scores.temp = computeTempScore(currentTemp);
-            renderQuiz2();
+            if (scores.temp === 10) {
+                renderQuiz2();
+            } else {
+                $track.off("mousedown touchstart");
+                $pin.off("mousedown touchstart");
+                continueAfterWrongAnswer("350\u00B0F", renderQuiz2);
+            }
         });
     }
 
@@ -434,7 +451,11 @@
                                 $plate.attr("src", SPRITES + "plain-plated-chicken.png");
                                 $instr.text("Plated!");
                                 scores.fry = computeFryScore(virtualSec);
-                                setTimeout(renderQuiz3, 900);
+                                if (scores.fry === 10) {
+                                    setTimeout(renderQuiz3, 900);
+                                } else {
+                                    continueAfterWrongAnswer("3-4 minutes, or about 180-240 seconds", renderQuiz3);
+                                }
                             });
                         }
                     } else if (overPan) {
@@ -547,7 +568,16 @@
 
         $(".quiz-confirm-btn").on("click", function () {
             scores.sauce = computeSauceScore(counts);
-            renderQuiz4();
+            if (scores.sauce === 10) {
+                renderQuiz4();
+            } else {
+                $(".quiz-ing").off("click keydown");
+                $(".quiz-restart-btn").prop("disabled", true);
+                continueAfterWrongAnswer(
+                    "3 soy, 3 vinegar, 3 sugar, 2 orange, 1 sesame",
+                    renderQuiz4
+                );
+            }
         });
     }
 
@@ -623,6 +653,14 @@
 
         $(".quiz-confirm-btn").on("click", function () {
             if (selectedId == null) return;
+            if (selectedId !== opts.correctId) {
+                $(".quiz-choice").prop("disabled", true);
+                $('.quiz-choice[data-id="' + opts.correctId + '"]').addClass("correct");
+                continueAfterWrongAnswer(opts.correctAnswer, function () {
+                    opts.onConfirm(selectedId);
+                });
+                return;
+            }
             opts.onConfirm(selectedId);
         });
     }
@@ -636,6 +674,8 @@
                 { id: "tbsp", label: "About 1 tablespoon", image: "less-oil-pan.png" },
                 { id: "dry", label: "Drain all of it \u2014 dry wok", image: "plain-pan.png" }
             ],
+            correctId: "tbsp",
+            correctAnswer: "About 1 tablespoon",
             onConfirm: function (id) {
                 scores.oil = id === "tbsp" ? 10 : 0;
                 renderQuiz5();
@@ -652,6 +692,8 @@
                 { id: "orange", label: "More orange slices", image: "orange-slices.png" },
                 { id: "cornstarch", label: "A dusting of cornstarch", image: "cornstarch.png" }
             ],
+            correctId: "garnish",
+            correctAnswer: "Green onions & sesame seeds",
             onConfirm: function (id) {
                 scores.garnish = id === "garnish" ? 10 : 0;
                 renderReport();
