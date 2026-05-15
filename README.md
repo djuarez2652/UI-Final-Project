@@ -1,5 +1,10 @@
 # User Interface Design Final Project
 
+# Team Members
+- David Juarez - djuarez2652
+- Wenyu Wang - Andwwy
+- Aisha Jamal
+
 ## Setup (Python venv)
 
 ```bash
